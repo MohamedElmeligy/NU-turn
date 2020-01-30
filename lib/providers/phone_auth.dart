@@ -10,6 +10,7 @@
 //   Map<String, String> _authData = {'name': '', 'phone': '', 'uid': ''};
 //   bool _isLoading = false;
 //   bool _signedUp = false;
+//   bool _hasError = false;
 //   final _phoneController = TextEditingController();
 //   final _nameController = TextEditingController();
 //   final _codeController = TextEditingController();
@@ -17,7 +18,7 @@
 //   String smsCode;
 //   AuthCredential _authCredential;
 //   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-//   String _verificationId;
+//   String _smsCode_user;
 
 //   //method 2
 
@@ -29,9 +30,10 @@
 //   bool isLoggedIn = false;
 //   FirebaseUser currentUser;
 
+//   PhoneCodeSent _codeIsSent;
+
 //   Future<void> verifyeNumber() async {
-//     final PhoneCodeSent smsCodeSent =
-//         (String verificationId, [int forceResendingToken]) async {
+//     _smsCode_sent = (String verificationId, [int forceResendingToken]) async {
 //       this._verificationId = verificationId;
 //       // print('Code sent to ${_phoneController.text}');
 //     };
@@ -40,8 +42,8 @@
 //         (String verificationId) {
 //       this._verificationId = verificationId;
 //       // setState(() {
-//         _isLoading = false;
-//         _switchAuthMode();
+//       _isLoading = false;
+//       _switchAuthMode();
 //       // });
 //     };
 
@@ -53,7 +55,7 @@
 //       firebaseAuth.signInWithCredential(_authCredential).catchError(
 //         (error) {
 //           // setState(() {
-//             _isLoading = false;
+//           _isLoading = false;
 //           // });
 
 //           var errorMsg = '';
@@ -79,23 +81,23 @@
 //             // print(user.user.providerData.toString());
 //             if (user.additionalUserInfo.isNewUser) {
 //               // setState(() {
-//                 _signedUp = true;
-//                 _isLoading = false;
+//               _signedUp = true;
+//               _isLoading = false;
 //               // });
 //             } else {
 //               prefs = await SharedPreferences.getInstance();
 //               await prefs.setString('id', currentUser.uid);
 //               bool doc = prefs.getBool('doctor');
 
-//               if (doc)
-//                 Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                         builder: (context) =>
-//                             MainScreen(currentUserId: currentUser.uid)));
-//               else
-//                 Navigator.push(context,
-//                     MaterialPageRoute(builder: (context) => Homepage()));
+//               // if (doc)
+//               //   Navigator.push(
+//               //       context,
+//               //       MaterialPageRoute(
+//               //           builder: (context) =>
+//               //               MainScreen(currentUserId: currentUser.uid)));
+//               // else
+//               //   Navigator.push(context,
+//               //       MaterialPageRoute(builder: (context) => Homepage()));
 //             }
 //           }
 //         },
@@ -107,7 +109,7 @@
 //       print(authException.message);
 //       if (authException.message.contains('blocked')) {
 //         // setState(() {
-//           _isLoading = false;
+//         _isLoading = false;
 //         // });
 //         errorDialog('دخول متكرر، يرجى المحاولة لاحقًا');
 //       }
@@ -139,9 +141,9 @@
 //           errorMsg = 'لقد حدث خطأ، حاول لاحقًا';
 //         _hasError = true;
 //         // setState(() {
-//           _isLoading = false;
-//           _hasError = true;
-//           _codeController.clear();
+//         _isLoading = false;
+//         _hasError = true;
+//         _codeController.clear();
 //         // });
 
 //         errorDialog(errorMsg);
@@ -152,17 +154,17 @@
 //         // Check is already sign up
 //         if (user.additionalUserInfo.isNewUser) {
 //           // setState(() {
-//             _signedUp = true;
-//             _isLoading = false;
+//           _signedUp = true;
+//           _isLoading = false;
 //           // });
 //         } else {
 //           prefs = await SharedPreferences.getInstance();
 //           prefs.setString('id', currentUser.uid);
-//           Navigator.push(
-//               context,
-//               MaterialPageRoute(
-//                   builder: (context) =>
-//                       MainScreen(currentUserId: prefs.getString('id'))));
+//           // Navigator.push(
+//           //     context,
+//           //     MaterialPageRoute(
+//           //         builder: (context) =>
+//           //             MainScreen(currentUserId: prefs.getString('id'))));
 //         }
 //       }
 //     });
@@ -176,7 +178,7 @@
 //     _formKey.currentState.save();
 
 //     // setState(() {
-//       _isLoading = true;
+//     _isLoading = true;
 //     // });
 //     if (!_signedUp) {
 //       if (_authMode == AuthMode.Login) {
@@ -184,57 +186,50 @@
 //       } else {
 //         signInManually();
 //       }
-//     } else {
-//       if (_radioValue != 0) {
-//         Navigator.push(context,
-//             MaterialPageRoute(builder: (context) => UserSignup(currentUser)));
-//       } else {
-//         Navigator.push(context,
-//             MaterialPageRoute(builder: (context) => DoctorSignup(currentUser)));
-//       }
 //     }
 //   }
 
 //   void _switchAuthMode() {
 //     if (_authMode == AuthMode.Login) {
 //       // setState(() {
-//         _authMode = AuthMode.Confirm;
-//         _codeController.clear();
-//         _hasError = false;
+//       _authMode = AuthMode.Confirm;
+//       _codeController.clear();
+//       _hasError = false;
 //       // });
 //     } else {
 //       // setState(() {
-//         _authMode = AuthMode.Login;
-//         _nameController.clear();
-//         _phoneController.clear();
-//         _hasError = false;
+//       _authMode = AuthMode.Login;
+//       _nameController.clear();
+//       _phoneController.clear();
+//       _hasError = false;
 //       // });
 //     }
 //   }
 
 //   void errorDialog(String msg) {
 //     showDialog(
-//         context: context,
-//         builder: (ctx) => Directionality(
-//               textDirection: TextDirection.rtl,
-//               child: AlertDialog(
-//                 title: Text(
-//                   'خطأ',
-//                   style: TextStyle(fontSize: 20),
-//                 ),
-//                 content: Text(
-//                   msg,
-//                   style: TextStyle(fontSize: 16),
-//                 ),
-//                 actions: <Widget>[
-//                   FlatButton(
-//                     child: Text('حسنا'),
-//                     onPressed: () {
-//                       Navigator.of(ctx).pop();
-//                     },
-//                   )
-//                 ],
-//               ),
-//             ));
+//       context: context,
+//       builder: (ctx) => Directionality(
+//         textDirection: TextDirection.rtl,
+//         child: AlertDialog(
+//           title: Text(
+//             'خطأ',
+//             style: TextStyle(fontSize: 20),
+//           ),
+//           content: Text(
+//             msg,
+//             style: TextStyle(fontSize: 16),
+//           ),
+//           actions: <Widget>[
+//             FlatButton(
+//               child: Text('حسنا'),
+//               onPressed: () {
+//                 Navigator.of(ctx).pop();
+//               },
+//             )
+//           ],
+//         ),
+//       ),
+//     );
 //   }
 // }
