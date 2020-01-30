@@ -9,7 +9,6 @@ import './providers/map.dart';
 import './screens/map_screen.dart';
 
 void main() {
-
   debugPaintSizeEnabled = false;
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,12 +32,9 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MapScreen(),
-    ),);
+        debugShowCheckedModeBanner: false,
+        home: MapScreen(),
+      ),
+    );
   }
 }
-
-
-
-

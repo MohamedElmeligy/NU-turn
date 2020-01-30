@@ -12,7 +12,7 @@ class MapProvider with ChangeNotifier {
   static const double CAMERA_TILT = 80;
   static const double CAMERA_BEARING = 30;
   static const LatLng MY_LOCATION = LatLng(30.025994, 31.022815);
-  static const LatLng BUS_LOCATION = LatLng(30.028960, 31.022400);
+  static const LatLng BUS_LOCATION = LatLng(30.0432003, 31.1889163);
 
   Completer<GoogleMapController> myController = Completer();
 
@@ -123,8 +123,14 @@ class MapProvider with ChangeNotifier {
 
   void showBusPinOnMap() {
     // get a LatLng out of the LocationData object
-    LatLng busPosition =
-        LatLng(busLocationData.latitude, busLocationData.longitude);
+
+    LatLng busPosition;
+
+    if (busLocationData != null) {
+      busPosition = LatLng(busLocationData.latitude, busLocationData.longitude);
+    } else {
+      busPosition = BUS_LOCATION;
+    }
 
     myPinInfo = PinInformation(
       locationName: "Start Location",
