@@ -36,7 +36,7 @@ class MapProvider with ChangeNotifier {
 
   CameraPosition initialCameraPosition;
 
-  double pinPillPosition = -100;
+  double _pinPillPosition = -60;
   PinInformation currentlySelectedPin = PinInformation(
       pinPath: '',
       avatarPath: '',
@@ -73,6 +73,7 @@ class MapProvider with ChangeNotifier {
   }
 
   Set<Marker> get markers => (_markers.values.toSet());
+  double get pinPillPosition => _pinPillPosition;
 
   void setMyLocation(LatLng myLocation) {
     myPosition = myLocation;
@@ -85,8 +86,7 @@ class MapProvider with ChangeNotifier {
               position: myPosition,
               onTap: () {
                 currentlySelectedPin = myPinInfo;
-                pinPillPosition = 0;
-                notifyListeners();
+                setPinPillPosition(60);
               },
               icon: myLocationIcon,
             ),
@@ -95,12 +95,16 @@ class MapProvider with ChangeNotifier {
               position: myPosition,
               onTap: () {
                 currentlySelectedPin = myPinInfo;
-                pinPillPosition = 0;
-                notifyListeners();
+                setPinPillPosition(60);
               },
               icon: myLocationIcon,
             ),
           );
+    notifyListeners();
+  }
+
+  void setPinPillPosition(double pos) {
+    _pinPillPosition = pos;
     notifyListeners();
   }
 
@@ -157,8 +161,7 @@ class MapProvider with ChangeNotifier {
           position: myPosition,
           onTap: () {
             currentlySelectedPin = myPinInfo;
-            pinPillPosition = 0;
-            notifyListeners();
+            setPinPillPosition(0);
           },
           icon: busLocationIcon,
         ),
@@ -172,8 +175,7 @@ class MapProvider with ChangeNotifier {
         position: busPosition,
         onTap: () {
           currentlySelectedPin = busPinInfo;
-          pinPillPosition = 0;
-          notifyListeners();
+          setPinPillPosition(60);
         },
         icon: busLocationIcon,
       ),
@@ -206,7 +208,7 @@ class MapProvider with ChangeNotifier {
           markerId: MarkerId('sourcePin'),
           onTap: () {
             currentlySelectedPin = busPinInfo;
-            pinPillPosition = 0;
+            setPinPillPosition(60);
           },
           position: pinPosition, // updated position
           icon: busLocationIcon),

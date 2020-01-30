@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import './providers/map.dart';
 
 import './screens/map_screen.dart';
+import './screens/test.dart';
 
 void main() {
   debugPaintSizeEnabled = false;
@@ -17,6 +18,12 @@ void main() {
     [
       DeviceOrientation.portraitUp,
     ],
+  );
+
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+    ),
   );
 
   runApp(MyApp());
@@ -33,7 +40,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: MapScreen(),
+        home: Test(),
       ),
     );
   }

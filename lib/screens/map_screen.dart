@@ -11,23 +11,23 @@ class MapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<MapProvider>(
-        builder: (ctx, mapProvider, ch) => Stack(
-          children: <Widget>[
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: GoogleMap(
+      body: Stack(
+        children: <Widget>[
+          Positioned(
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Consumer<MapProvider>(
+              builder: (ctx, mapProvider, ch) => GoogleMap(
                   myLocationEnabled: true,
-                  compassEnabled: true,
+                  myLocationButtonEnabled: false,
                   tiltGesturesEnabled: false,
                   markers: mapProvider.markers,
                   mapType: MapType.normal,
                   initialCameraPosition: mapProvider.initialCameraPosition,
                   onTap: (LatLng loc) {
-                    mapProvider.pinPillPosition = -100;
+                    mapProvider.setPinPillPosition(-100);
                   },
                   onMapCreated: (GoogleMapController controller) {
                     controller.setMapStyle(StyleUtil.mapStyles);
@@ -37,12 +37,30 @@ class MapScreen extends StatelessWidget {
                     mapProvider.showBusPinOnMap();
                   }),
             ),
-            MapPinPillComponent(
-              pinPillPosition: mapProvider.pinPillPosition,
-              currentlySelectedPin: mapProvider.currentlySelectedPin,
-            )
-          ],
-        ),
+          ),
+          MapPinPillComponent(),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 60,
+            child: RaisedButton(
+              onPressed: () {},
+              color: Colors.deepPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(0)),
+              ),
+              child: Text(
+                "NEED A RIDE",
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
