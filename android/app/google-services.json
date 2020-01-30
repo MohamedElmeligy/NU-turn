@@ -1,42 +1,34 @@
 {
   "project_info": {
-    "project_number": "658986419806",
-    "firebase_url": "https://uturn-5f205.firebaseio.com",
-    "project_id": "uturn-5f205",
-    "storage_bucket": "uturn-5f205.appspot.com"
+    "project_number": "213977301536",
+    "firebase_url": "https://turn-nu-266716.firebaseio.com",
+    "project_id": "turn-nu-266716",
+    "storage_bucket": "turn-nu-266716.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:658986419806:android:f17399e3eae69b57e996cf",
+        "mobilesdk_app_id": "1:213977301536:android:ca5b3ad955e725d521f245",
         "android_client_info": {
           "package_name": "com.example.uturn"
         }
       },
       "oauth_client": [
         {
-          "client_id": "658986419806-pdcdj6qbjgbsbftjljpv0ekm2dsipjs0.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.uturn",
-            "certificate_hash": "1aa242154adc8eecd0f6fe1c062944b1e03c9002"
-          }
-        },
-        {
-          "client_id": "658986419806-par9dbqt9681ugek93pql6afpfj0n05k.apps.googleusercontent.com",
+          "client_id": "213977301536-71s70pta1u2464osemm6tijp4lseucdk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBKof2JU06wfLD9QZSwvMVg9x18MaqJTQ8"
+          "current_key": "AIzaSyCEkzcVpE7TGBKzSlUCxUICIDGmpei8dQ0"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "658986419806-par9dbqt9681ugek93pql6afpfj0n05k.apps.googleusercontent.com",
+              "client_id": "213977301536-71s70pta1u2464osemm6tijp4lseucdk.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

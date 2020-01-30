@@ -1,47 +1,49 @@
+import 'package:flutter/material.dart';
+
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/map.dart';
+import '../components/map_pin_pill.dart';
+import '../utils/map.dart';
+
 class MapScreen extends StatelessWidget {
-  
   @override
   Widget build(BuildContext context) {
-    CameraPosition initialCameraPosition = CameraPosition(
-        zoom: CAMERA_ZOOM,
-        tilt: CAMERA_TILT,
-        bearing: CAMERA_BEARING,
-        target: SOURCE_LOCATION);
-    if (currentLocation != null) {
-      initialCameraPosition = CameraPosition(
-          target: LatLng(currentLocation.latitude, currentLocation.longitude),
-          zoom: CAMERA_ZOOM,
-          tilt: CAMERA_TILT,
-          bearing: CAMERA_BEARING);
-    }
     return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          GoogleMap(
-              myLocationEnabled: true,
-              compassEnabled: true,
-              tiltGesturesEnabled: false,
-              markers: _markers,
-              polylines: _polylines,
-              mapType: MapType.normal,
-              initialCameraPosition: initialCameraPosition,
-              onTap: (LatLng loc) {
-                pinPillPosition = -100;
-              },
-              onMapCreated: (GoogleMapController controller) {
-                controller.setMapStyle(Utils.mapStyles);
-                _controller.complete(controller);
-                // my map has completed being created;
-                // i'm ready to show the pins on the map
-                showPinsOnMap();
-              }),
-          MapPinPillComponent(
-              pinPillPosition: pinPillPosition,
-              currentlySelectedPin: currentlySelectedPin)
-        ],
+      body: Consumer<MapProvider>(
+        builder: (ctx, mapProvider, ch) => Stack(
+          children: <Widget>[
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: GoogleMap(
+                  myLocationEnabled: true,
+                  compassEnabled: true,
+                  tiltGesturesEnabled: false,
+                  markers: mapProvider.markers,
+                  mapType: MapType.normal,
+                  initialCameraPosition: mapProvider.initialCameraPosition,
+                  onTap: (LatLng loc) {
+                    mapProvider.pinPillPosition = -100;
+                  },
+                  onMapCreated: (GoogleMapController controller) {
+                    controller.setMapStyle(StyleUtil.mapStyles);
+                    mapProvider.myController.complete(controller);
+                    // my map has completed being created;
+                    // i'm ready to show the pins on the map
+                    mapProvider.showBusPinOnMap();
+                  }),
+            ),
+            MapPinPillComponent(
+              pinPillPosition: mapProvider.pinPillPosition,
+              currentlySelectedPin: mapProvider.currentlySelectedPin,
+            )
+          ],
+        ),
       ),
     );
   }
-
-  
 }

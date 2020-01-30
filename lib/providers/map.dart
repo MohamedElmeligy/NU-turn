@@ -14,7 +14,7 @@ class MapProvider with ChangeNotifier {
   static const LatLng MY_LOCATION = LatLng(30.025994, 31.022815);
   static const LatLng BUS_LOCATION = LatLng(30.028960, 31.022400);
 
-  Completer<GoogleMapController> _controller = Completer();
+  Completer<GoogleMapController> myController = Completer();
 
   Map<String, Marker> _markers = Map<String, Marker>();
 
@@ -33,6 +33,8 @@ class MapProvider with ChangeNotifier {
 
 // wrapper around the location API
   Location busLocation = Location();
+
+  CameraPosition initialCameraPosition;
 
   double pinPillPosition = -100;
   PinInformation currentlySelectedPin = PinInformation(
@@ -56,12 +58,21 @@ class MapProvider with ChangeNotifier {
       updatePinsOnMap();
     });
 
+    initialCameraPosition = CameraPosition(
+      zoom: CAMERA_ZOOM,
+      tilt: CAMERA_TILT,
+      bearing: CAMERA_BEARING,
+      target: BUS_LOCATION,
+    );
+
     // set custom marker pins
     setMyAndBusIcons();
 
     // set the initial location
     setInitialBusLocation();
   }
+
+  Set<Marker> get markers => (_markers.values.toSet());
 
   void setMyLocation(LatLng myLocation) {
     myPosition = myLocation;
@@ -174,7 +185,7 @@ class MapProvider with ChangeNotifier {
       target: LatLng(busLocationData.latitude, busLocationData.longitude),
     );
 
-    final GoogleMapController controller = await _controller.future;
+    final GoogleMapController controller = await myController.future;
 
     controller.animateCamera(CameraUpdate.newCameraPosition(cPosition));
     // updated position
