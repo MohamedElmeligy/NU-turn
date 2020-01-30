@@ -17,7 +17,6 @@ const LatLng DEST_LOCATION = LatLng(30.028960, 31.022400);
 
 void main() {
   runApp(MyApp());
-  SystemChrome.setEnabledSystemUIOverlays([]);
 }
 
 class MyApp extends StatelessWidget {
