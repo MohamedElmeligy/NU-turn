@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
@@ -13,6 +14,20 @@ class MapProvider with ChangeNotifier {
   static const double CAMERA_BEARING = 30;
   static const LatLng MY_LOCATION = LatLng(30.025994, 31.022815);
   static const LatLng BUS_LOCATION = LatLng(30.0432003, 31.1889163);
+
+  CollectionReference coRef = Firestore().collection('positions');
+
+  bool student = true;
+
+  bool _requestedRide = false;
+  bool addingMyRequest = false;
+
+  void setRequestedRide(bool req) {
+    _requestedRide = req;
+    notifyListeners();
+  }
+
+  bool get requestedRide => _requestedRide;
 
   Completer<GoogleMapController> myController = Completer();
 
@@ -26,13 +41,16 @@ class MapProvider with ChangeNotifier {
   BitmapDescriptor busLocationIcon;
 
   LatLng myPosition;
+  LatLng busPosition;
 
 // the bus's initial location and current location
 // as it moves
+  LocationData myLocationData;
   LocationData busLocationData;
 
 // wrapper around the location API
-  Location busLocation = Location();
+  Location myLocation;
+  Location busLocation;
 
   CameraPosition initialCameraPosition;
 
@@ -48,15 +66,29 @@ class MapProvider with ChangeNotifier {
 
 // Defualt construction;
   MapProvider() {
-    // subscribe to changes in the bus's location
-    // by "listening" to the location's onLocationChanged event
-    busLocation.onLocationChanged().listen((LocationData cLoc) {
-      // cLoc contains the lat and long of the
-      // current bus's position in real time,
-      // so we're holding on to it
-      busLocationData = cLoc;
-      updatePinsOnMap();
-    });
+    if (student) {
+      myLocation = Location();
+
+      coRef.document('driver').snapshots().listen((data) {
+        print(data.data['position'].latitude);
+        GeoPoint geo = data.data['position'];
+        busPosition = LatLng(geo.latitude, geo.longitude);
+        updatePinsOnMap(true);
+      });
+    } else {
+      busLocation = Location();
+      // subscribe to changes in the bus's location
+      // by "listening" to the location's onLocationChanged event
+      busLocation.onLocationChanged().listen((LocationData cLoc) {
+        // cLoc contains the lat and long of the
+        // current bus's position in real time,
+        // so we're holding on to it
+        busLocationData = cLoc;
+        busPosition =
+            LatLng(busLocationData.latitude, busLocationData.longitude);
+        updatePinsOnMap(true);
+      });
+    }
 
     initialCameraPosition = CameraPosition(
       zoom: CAMERA_ZOOM,
@@ -67,39 +99,49 @@ class MapProvider with ChangeNotifier {
 
     // set custom marker pins
     setMyAndBusIcons();
-
-    // set the initial location
-    setInitialBusLocation();
   }
 
   Set<Marker> get markers => (_markers.values.toSet());
   double get pinPillPosition => _pinPillPosition;
 
-  void setMyLocation(LatLng myLocation) {
-    myPosition = myLocation;
-    myPosition == null
-        ? _markers.remove('myPin')
-        : _markers.update(
-            'myPin',
-            (marker) => Marker(
-              markerId: MarkerId('myPin'),
-              position: myPosition,
-              onTap: () {
-                currentlySelectedPin = myPinInfo;
-                setPinPillPosition(60);
-              },
-              icon: myLocationIcon,
-            ),
-            ifAbsent: () => Marker(
-              markerId: MarkerId('myPin'),
-              position: myPosition,
-              onTap: () {
-                currentlySelectedPin = myPinInfo;
-                setPinPillPosition(60);
-              },
-              icon: myLocationIcon,
-            ),
-          );
+  void setMyLocation(bool remove) async {
+    addingMyRequest = true;
+    notifyListeners();
+
+    myLocationData = await myLocation.getLocation();
+    myPosition = LatLng(myLocationData.latitude, myLocationData.longitude);
+
+    if (remove) {
+      _markers.remove('myPin');
+      _requestedRide = false;
+    } else {
+      _requestedRide = true;
+      _markers.update(
+        'myPin',
+        (marker) => Marker(
+          markerId: MarkerId('myPin'),
+          position: myPosition,
+          onTap: () {
+            currentlySelectedPin = myPinInfo;
+            setPinPillPosition(60);
+          },
+          icon: myLocationIcon,
+        ),
+        ifAbsent: () => Marker(
+          markerId: MarkerId('myPin'),
+          position: myPosition,
+          onTap: () {
+            currentlySelectedPin = myPinInfo;
+            setPinPillPosition(60);
+          },
+          icon: myLocationIcon,
+        ),
+      );
+    }
+
+    updatePinsOnMap(false);
+
+    addingMyRequest = false;
     notifyListeners();
   }
 
@@ -118,11 +160,6 @@ class MapProvider with ChangeNotifier {
       ImageConfiguration(devicePixelRatio: 2.5),
       'assets/destination_map_marker.png',
     );
-  }
-
-  void setInitialBusLocation() async {
-    // hard-coded destination for this example
-    busLocationData = await busLocation.getLocation();
   }
 
   void showBusPinOnMap() {
@@ -182,7 +219,7 @@ class MapProvider with ChangeNotifier {
     );
   }
 
-  void updatePinsOnMap() async {
+  void updatePinsOnMap(bool bus) async {
     // create a new CameraPosition instance
     // every time the location changes, so the camera
     // follows the pin as it moves with an animation
@@ -190,28 +227,28 @@ class MapProvider with ChangeNotifier {
       zoom: CAMERA_ZOOM,
       tilt: CAMERA_TILT,
       bearing: CAMERA_BEARING,
-      target: LatLng(busLocationData.latitude, busLocationData.longitude),
+      target: bus ? busPosition : myPosition,
     );
 
     final GoogleMapController controller = await myController.future;
 
     controller.animateCamera(CameraUpdate.newCameraPosition(cPosition));
     // updated position
-    LatLng pinPosition =
-        LatLng(busLocationData.latitude, busLocationData.longitude);
 
-    busPinInfo.location = pinPosition;
+    myPinInfo.location = myPosition;
+    busPinInfo.location = busPosition;
 
     _markers.update(
-      'busPin',
+      bus ? 'busPin' : 'myPin',
       (marker) => Marker(
-          markerId: MarkerId('sourcePin'),
-          onTap: () {
-            currentlySelectedPin = busPinInfo;
-            setPinPillPosition(60);
-          },
-          position: pinPosition, // updated position
-          icon: busLocationIcon),
+        markerId: MarkerId(bus ? 'busPin' : 'myPin'),
+        onTap: () {
+          currentlySelectedPin = bus ? busPinInfo : myPinInfo;
+          setPinPillPosition(60);
+        },
+        position: bus ? busPosition : myPosition, // updated position
+        icon: bus ? busLocationIcon : myLocationIcon,
+      ),
     );
 
     notifyListeners();

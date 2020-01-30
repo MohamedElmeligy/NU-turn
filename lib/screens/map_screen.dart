@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/map.dart';
+import './bottom_map_screen.dart';
 import '../components/map_pin_pill.dart';
 import '../utils/map.dart';
 
@@ -39,27 +40,7 @@ class MapScreen extends StatelessWidget {
             ),
           ),
           MapPinPillComponent(),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 60,
-            child: RaisedButton(
-              onPressed: () {},
-              color: Colors.deepPurple,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(0)),
-              ),
-              child: Text(
-                "NEED A RIDE",
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
+          BottomButtons(),
         ],
       ),
     );
