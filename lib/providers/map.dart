@@ -10,7 +10,7 @@ import '../models/pin_pill_info.dart';
 
 class MapProvider with ChangeNotifier {
   static const double CAMERA_ZOOM = 16;
-  static const double CAMERA_TILT = 80;
+  static const double CAMERA_TILT = 0;
   static const double CAMERA_BEARING = 30;
   static const LatLng MY_LOCATION = LatLng(30.025994, 31.022815);
   static const LatLng BUS_LOCATION = LatLng(30.0432003, 31.1889163);
