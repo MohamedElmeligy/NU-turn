@@ -23,6 +23,7 @@ class MapScreen extends StatelessWidget {
               builder: (ctx, mapProvider, ch) => GoogleMap(
                   myLocationEnabled: true,
                   myLocationButtonEnabled: false,
+                  compassEnabled: false,
                   tiltGesturesEnabled: false,
                   markers: mapProvider.markers,
                   mapType: MapType.normal,
@@ -37,6 +38,19 @@ class MapScreen extends StatelessWidget {
                     // i'm ready to show the pins on the map
                     mapProvider.showBusPinOnMap();
                   }),
+            ),
+          ),
+          Positioned(
+            top: 30,
+            left: 15,
+            child: IconButton(
+              onPressed: () {},
+              color: Colors.transparent,
+              icon: Icon(
+                Icons.person,
+                color: Colors.deepPurple,
+                size: 36.0,
+              ),
             ),
           ),
           MapPinPillComponent(),

@@ -86,6 +86,10 @@ class MapProvider with ChangeNotifier {
         busLocationData = cLoc;
         busPosition =
             LatLng(busLocationData.latitude, busLocationData.longitude);
+        coRef.document('driver').updateData({
+          "position": GeoPoint(busPosition.latitude, busPosition.longitude),
+        });
+
         updatePinsOnMap(true);
       });
     }
