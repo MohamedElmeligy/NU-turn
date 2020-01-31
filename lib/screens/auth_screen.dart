@@ -21,38 +21,18 @@ class _LoginPageState extends State<LoginPage> {
           Key _form = auth.getFormKey();
           FormState _formState = auth.getFormKey().currentState;
 
-          TextEditingController _phoneController = new TextEditingController();
-          TextEditingController _nameController = new TextEditingController();
-          TextEditingController _idController = new TextEditingController();
+          TextEditingController _phoneController = auth.getPhoneController();
+          TextEditingController _nameController = auth.getNameController();
+          TextEditingController _idController = auth.getIdController();
 
-          User _user;
+          String _name, _phone, _id;
 
-          bool _loading;
+          bool _loading = auth.getIsLoading();
+          bool _showDialog = auth.getShowDialog();
+          bool _loggedIn = auth.getLoginSuccess();
           bool _showPins = auth.getShowpins();
           bool _pinHasError = auth.getPinHasError();
           String _errorMsg = auth.getErrorMsg();
-
-          void submit() async {
-            if (!_formState.validate()) {
-              // Invalid!
-              return;
-            }
-            _formState.save();
-            setState(() {
-              _loading = true;
-            });
-            auth.setProfile(_user);
-            auth.automaticSignIn();
-            setState(() {
-              _loading = false;
-            });
-
-            // if (true) {
-            //   auth.verifyeNumber();
-            // } else {
-            //   auth.signInManually();
-            // }
-          }
 
           void errorDialog(String msg) {
             showDialog(
@@ -81,72 +61,34 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
 
-          _getTextFields() {
-            return Expanded(
-              flex: 4,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  SizedBox(
-                    height: 15,
-                  ),
-                  TextFormField(
-                    controller: _phoneController,
-                    validator: (value) {
-                      if (value.length != 11) {
-                        return 'Invalid Number';
-                      }
-                    },
-                    decoration: InputDecoration(labelText: 'Phone'),
-                    onChanged: (value) {
-                      _user.phone = value;
-                      print("dsssssss");
-                      print(_user.phone);
-                    },
-                    onSaved: (value) {
-                      _user.phone = value;
-                      print("dsssssss");
-                      print(_user.phone);
-                    },
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  TextFormField(
-                    controller: _nameController,
-                    validator: (value) {
-                      if (value.length < 5) {
-                        return 'Please Enter Full Name';
-                      }
-                    },
-                    decoration: InputDecoration(labelText: 'Name'),
-                    onChanged: (value) {
-                      _user.name = value;
-                      print(_user.name);
-                    },
-                  ),
-                  SizedBox(
-                    height: 25,
-                  ),
-                  TextFormField(
-                    controller: _idController,
-                    validator: (value) {
-                      if (value.length != 8) {
-                        return 'Invalid ID';
-                      }
-                    },
-                    decoration: InputDecoration(labelText: 'University ID'),
-                    onChanged: (value) {
-                      _user.id = value;
-                      print(_user.id);
-                    },
-                  ),
-                  SizedBox(
-                    height: 25,
-                  ),
-                ],
-              ),
-            );
+          void submit() async {
+            if (!_formState.validate()) {
+              // Invalid!
+              return;
+            }
+            _formState.save();
+
+            User _user = new User(phone: "+20$_phone", name: _name, id: _id);
+
+            auth.setProfile(_user);
+            if (!_showPins)
+              await auth.automaticSignIn();
+            else
+              await auth.manualSignIn();
+
+            if (_showDialog) {
+              //show errorDialog
+              errorDialog(_errorMsg);
+              auth.setShowDialog(false);
+            }
+
+            if (_loggedIn) {
+              //Navigate
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MapScreen()),
+              );
+            }
           }
 
           _getSignIn(context) {
@@ -177,28 +119,102 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
 
+          _getTextFields() {
+            return Expanded(
+              flex: 4,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    controller: _phoneController,
+                    validator: (value) {
+                      if (value.length != 11) {
+                        return 'Invalid Number';
+                      }
+                    },
+                    decoration: InputDecoration(labelText: 'Phone'),
+                    onChanged: (value) {
+                      _phone = value;
+                    },
+                    onSaved: (value) {
+                      _phone = value;
+                    },
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    controller: _nameController,
+                    validator: (value) {
+                      if (value.length < 5) {
+                        return 'Please Enter Full Name';
+                      }
+                    },
+                    decoration: InputDecoration(labelText: 'Name'),
+                    onChanged: (value) {
+                      _name = value;
+                    },
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  TextFormField(
+                    controller: _idController,
+                    validator: (value) {
+                      if (value.length != 8) {
+                        return 'Invalid ID';
+                      }
+                    },
+                    decoration: InputDecoration(labelText: 'University ID'),
+                    onChanged: (value) {
+                      _id = value;
+                    },
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                ],
+              ),
+            );
+          }
+
           _getPinField() {
-            return Center(
-              child: PinCodeTextField(
-                pinBoxWidth: 30,
-                pinBoxHeight: 50,
-                autofocus: true,
-                highlight: true,
-                highlightColor: Colors.blue,
-                defaultBorderColor: Colors.black,
-                hasTextBorderColor: Colors.green,
-                hasError: _pinHasError,
-                maxLength: 6,
-                pinTextAnimatedSwitcherTransition:
-                    ProvidedPinBoxTextAnimation.scalingTransition,
-                pinTextAnimatedSwitcherDuration: Duration(milliseconds: 200),
-                highlightAnimationBeginColor: Colors.blue,
-                highlightAnimationEndColor: Colors.black87,
-                highlightAnimationDuration: Duration(milliseconds: 1000),
-                keyboardType: TextInputType.phone,
-                onDone: (String s) {
-                  auth.manualSignIn(s);
-                },
+            return Expanded(
+              flex: 4,
+              child: Center(
+                child: PinCodeTextField(
+                  pinBoxWidth: 30,
+                  pinBoxHeight: 50,
+                  autofocus: true,
+                  highlight: true,
+                  highlightColor: Colors.blue,
+                  defaultBorderColor: Colors.black,
+                  hasTextBorderColor: Colors.green,
+                  hasError: _pinHasError,
+                  maxLength: 6,
+                  pinTextAnimatedSwitcherTransition:
+                      ProvidedPinBoxTextAnimation.scalingTransition,
+                  pinTextAnimatedSwitcherDuration: Duration(milliseconds: 200),
+                  highlightAnimationBeginColor: Colors.blue,
+                  highlightAnimationEndColor: Colors.black87,
+                  highlightAnimationDuration: Duration(milliseconds: 1000),
+                  keyboardType: TextInputType.phone,
+                  onDone: (String s) {
+                    auth.setSmsCode(s);
+                  },
+                ),
+              ),
+            );
+          }
+
+          _getCircle() {
+            return Expanded(
+              flex: 4,
+              child: Center(
+                child: CircularProgressIndicator(),
               ),
             );
           }
@@ -216,7 +232,9 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         children: <Widget>[
                           _getHeader(),
-                          !_showPins ? _getTextFields() : _getPinField(),
+                          _loading
+                              ? _getCircle()
+                              : !_showPins ? _getTextFields() : _getPinField(),
                           _getSignIn(context),
                           _getBottomRow(),
                         ],

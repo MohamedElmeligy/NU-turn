@@ -6,15 +6,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 
 class Auth with ChangeNotifier {
+  Auth() {
+    init();
+  }
   final GlobalKey _formKey = GlobalKey();
 
-  User _user;
+  static User _user;
 
-  bool _signedUp = false;
+  bool _showDialog = false;
   bool _hasError = false;
   bool _isLoading = false;
   bool _isLoggedIn = false;
+  bool _loginSuccess = false;
   bool _showPins = false;
+
+  final _phoneController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _idController = TextEditingController();
 
   static SharedPreferences _prefs;
 
@@ -27,23 +35,30 @@ class Auth with ChangeNotifier {
   PhoneVerificationFailed _verificationFailed;
 
   String _verificationCode;
-  String _errorMsg;
+  String _smsCode;
+  String _errorMsg = "";
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
-    String name = _prefs.getString('name');
-    print(name);
+    String _phone = _prefs.getString('phone');
+    String _name = _prefs.getString('name');
+    String _id = _prefs.getString('id');
+    _user = new User(phone: _phone, name: _name, id: _id);
 
     // notifyListeners();
   }
 
   Future<void> automaticSignIn() async {
+    _isLoading = true;
+    notifyListeners();
+
     _codeIsSent = (String verificationId, [int forceResendingToken]) async {
       this._verificationCode = verificationId;
     };
 
     _codeAutoRetrievalTimeout = (String verificationId) {
       this._verificationCode = verificationId;
+      _isLoading = false;
       _showPins = true;
       notifyListeners();
     };
@@ -55,6 +70,10 @@ class Auth with ChangeNotifier {
 
     _verificationFailed = (AuthException authException) {
       print(authException.message);
+      _isLoading = false;
+      _showDialog = true;
+      _errorMsg = "Tried Logging in frequently, please try again later!";
+      notifyListeners();
     };
 
     await firebaseAuth.verifyPhoneNumber(
@@ -67,25 +86,31 @@ class Auth with ChangeNotifier {
     );
   }
 
-  void manualSignIn(String code) async {
-    _verification(PhoneAuthProvider.getCredential(
-        verificationId: _verificationCode, smsCode: code));
+  Future<void> manualSignIn() async {
+    _isLoading = true;
+    notifyListeners();
+    await _verification(PhoneAuthProvider.getCredential(
+        verificationId: _verificationCode, smsCode: _smsCode));
+    _isLoading = false;
+    notifyListeners();
   }
 
-  void _verification(AuthCredential auth) {
+  Future<void> _verification(AuthCredential auth) {
     _authCredential = auth;
     firebaseAuth.signInWithCredential(_authCredential).catchError(
       (error) {
         print(error.toString());
-        if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE'))
-          _errorMsg = 'الكود غير صحيح';
-        else if (error.toString().contains('Network'))
-          _errorMsg = 'تحقق من إتصال الانترنت';
+        if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE')) {
+          _errorMsg = 'Invalid Code';
+          _hasError = true;
+        } else if (error.toString().contains('ERROR_NETWORK_REQUEST_FAILED'))
+          _errorMsg = 'Network Error!';
         else
-          _errorMsg = 'لقد حدث خطأ، حاول لاحقًا';
+          _errorMsg = 'Error, please try again later!';
 
-        _hasError = true;
-        print('error: '+ _errorMsg);
+        print('error: ' + _errorMsg);
+        _showDialog = true;
+        _isLoading = false;
         notifyListeners();
 
         // errorDialog(errorMsg);
@@ -93,7 +118,9 @@ class Auth with ChangeNotifier {
     ).then(
       (user) {
         if (user != null) {
-          print("signed In!!!!!!!!!!!!!!!!");
+          _isLoading = false;
+          _loginSuccess = true;
+          notifyListeners();
         }
       },
     );
@@ -111,6 +138,14 @@ class Auth with ChangeNotifier {
     return _hasError;
   }
 
+  bool getLoginSuccess() {
+    return _loginSuccess;
+  }
+
+  bool getIsLoading() {
+    return _isLoading;
+  }
+
   GlobalKey getFormKey() {
     return _formKey;
   }
@@ -126,11 +161,38 @@ class Auth with ChangeNotifier {
     return _user;
   }
 
+  TextEditingController getPhoneController() {
+    return _phoneController;
+  }
+
+  TextEditingController getNameController() {
+    return _nameController;
+  }
+
+  TextEditingController getIdController() {
+    return _idController;
+  }
+
+  String getSmsCode() {
+    return _smsCode;
+  }
+
+  void setSmsCode(String code) {
+    _smsCode = code;
+  }
+
+  bool getShowDialog() {
+    return _showDialog;
+  }
+
+  void setShowDialog(bool showDialog) {
+    _showDialog = showDialog;
+  }
+
   void setProfile(User user) {
     _user.phone = user.phone;
     _user.name = user.name;
     _user.id = user.id;
-
     _prefs.setString('phone', _user.phone);
     _prefs.setString('name', _user.name);
     _prefs.setString('id', _user.id);
