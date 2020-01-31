@@ -1,199 +1,138 @@
-// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// enum AuthMode { Confirm, Login }
+import '../models/user.dart';
 
-// class Auth with ChangeNotifier {
-//   final GlobalKey _formKey = GlobalKey();
+class Auth with ChangeNotifier {
+  final GlobalKey _formKey = GlobalKey();
 
-//   AuthMode _authMode = AuthMode.Login;
-//   Map<String, String> _authData = {'name': '', 'phone': '', 'uid': ''};
+  User _user;
 
-//   bool _signedUp = false;
-//   bool _hasError = false;
-//   bool _isLoading = false;
-//   bool _isLoggedIn = false;
+  bool _signedUp = false;
+  bool _hasError = false;
+  bool _isLoading = false;
+  bool _isLoggedIn = false;
+  bool _showPins = false;
 
-//   final _phoneController = TextEditingController();
-//   final _nameController = TextEditingController();
-//   final _uniIdController = TextEditingController();
-//   final _codeController = TextEditingController();
+  static SharedPreferences _prefs;
 
-//   String _smsCode;
-//   AuthCredential _authCredential;
-//   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-//   String _verificationCode;
-//   static SharedPreferences _prefs;
+  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  AuthCredential _authCredential;
 
-//   FirebaseUser _currentUser;
+  PhoneCodeSent _codeIsSent;
+  PhoneCodeAutoRetrievalTimeout _codeAutoRetrievalTimeout;
+  PhoneVerificationCompleted _verificationCompleted;
+  PhoneVerificationFailed _verificationFailed;
 
-//   PhoneCodeSent _codeIsSent;
-//   PhoneCodeAutoRetrievalTimeout _codeAutoRetrievalTimeout;
-//   PhoneVerificationCompleted _verificationCompleted;
-//   PhoneVerificationFailed _verificationFailed;
+  String _verificationCode;
+  String _errorMsg;
 
-//   Future<void> init() async {
-//     _prefs = await SharedPreferences.getInstance();
-//     String name = _prefs.getString('name');
-//     print(name);
+  Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+    String name = _prefs.getString('name');
+    print(name);
 
-//     // notifyListeners();
-//   }
+    // notifyListeners();
+  }
 
-//   GlobalKey getkey(){
-//     return _formKey;
-//   }
+  Future<void> automaticSignIn() async {
+    _codeIsSent = (String verificationId, [int forceResendingToken]) async {
+      this._verificationCode = verificationId;
+    };
 
-//   Future<void> verifyeNumber() async {
-//     _codeIsSent = (String verificationId, [int forceResendingToken]) async {
-//       this._verificationCode = verificationId;
-//     };
+    _codeAutoRetrievalTimeout = (String verificationId) {
+      this._verificationCode = verificationId;
+      _showPins = true;
+      notifyListeners();
+    };
 
-//     _codeAutoRetrievalTimeout = (String verificationId) {
-//       this._verificationCode = verificationId;
-//       // setState(() {
-//       _isLoading = false;
-//       _switchAuthMode();
-//       // });
-//     };
+    //called when Auto verified
+    _verificationCompleted = (AuthCredential auth) {
+      _verification(auth);
+    };
 
-//     //called when Auto verified
-//     _verificationCompleted = (AuthCredential auth) {
-//       _verification(auth);
-//     };
+    _verificationFailed = (AuthException authException) {
+      print(authException.message);
+    };
 
-//     _verificationFailed = (AuthException authException) {
-//       print(authException.message);
-//       if (authException.message.contains('blocked')) {
-//         // setState(() {
-//         _isLoading = false;
-//         // });
-//         errorDialog('دخول متكرر، يرجى المحاولة لاحقًا');
-//       }
-//     };
+    await firebaseAuth.verifyPhoneNumber(
+      phoneNumber: _user.phone,
+      timeout: const Duration(milliseconds: 0),
+      codeSent: _codeIsSent,
+      codeAutoRetrievalTimeout: _codeAutoRetrievalTimeout,
+      verificationCompleted: _verificationCompleted,
+      verificationFailed: _verificationFailed,
+    );
+  }
 
-//     await firebaseAuth.verifyPhoneNumber(
-//       phoneNumber: _authData['phone'],
-//       timeout: const Duration(milliseconds: 0),
-//       codeSent: _codeIsSent,
-//       codeAutoRetrievalTimeout: _codeAutoRetrievalTimeout,
-//       verificationCompleted: _verificationCompleted,
-//       verificationFailed: _verificationFailed,
-//     );
-  
-//   }
+  void manualSignIn(String code) async {
+    _verification(PhoneAuthProvider.getCredential(
+        verificationId: _verificationCode, smsCode: code));
+  }
 
-//   signInManually() async {
-//     _verification(PhoneAuthProvider.getCredential(
-//         verificationId: _verificationCode, smsCode: _smsCode));
-//   }
+  void _verification(AuthCredential auth) {
+    _authCredential = auth;
+    firebaseAuth.signInWithCredential(_authCredential).catchError(
+      (error) {
+        print(error.toString());
+        if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE'))
+          _errorMsg = 'الكود غير صحيح';
+        else if (error.toString().contains('Network'))
+          _errorMsg = 'تحقق من إتصال الانترنت';
+        else
+          _errorMsg = 'لقد حدث خطأ، حاول لاحقًا';
 
-//   void submit() async {
-//     if (!_formKey.currentState.validate()) {
-//       // Invalid!
-//       return;
-//     }
-//     _formKey.currentState.save();
+        _hasError = true;
+        print('error: '+ _errorMsg);
+        notifyListeners();
 
-//     // setState(() {
-//     _isLoading = true;
-//     // });
-//     if (!_signedUp) {
-//       if (_authMode == AuthMode.Login) {
-//         verifyeNumber();
-//       } else {
-//         signInManually();
-//       }
-//     }
-//   }
+        // errorDialog(errorMsg);
+      },
+    ).then(
+      (user) {
+        if (user != null) {
+          print("signed In!!!!!!!!!!!!!!!!");
+        }
+      },
+    );
+  }
 
-//   void _switchAuthMode() {
-//     if (_authMode == AuthMode.Login) {
-//       // setState(() {
-//       _authMode = AuthMode.Confirm;
-//       _codeController.clear();
-//       _hasError = false;
-//       // });
-//     } else {
-//       // setState(() {
-//       _authMode = AuthMode.Login;
-//       _nameController.clear();
-//       _phoneController.clear();
-//       _hasError = false;
-//       // });
-//     }
-//   }
+  bool getShowPins(bool autoVerified) {
+    return autoVerified;
+  }
 
-//   void errorDialog(String msg) {
-//     showDialog(
-//       context: context,
-//       builder: (ctx) => Directionality(
-//         textDirection: TextDirection.rtl,
-//         child: AlertDialog(
-//           title: Text(
-//             'خطأ',
-//             style: TextStyle(fontSize: 20),
-//           ),
-//           content: Text(
-//             msg,
-//             style: TextStyle(fontSize: 16),
-//           ),
-//           actions: <Widget>[
-//             FlatButton(
-//               child: Text('حسنا'),
-//               onPressed: () {
-//                 Navigator.of(ctx).pop();
-//               },
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
+  bool getShowpins() {
+    return _showPins;
+  }
 
-//   void _verification(AuthCredential auth) {
-//     _authCredential = auth;
-//     firebaseAuth.signInWithCredential(_authCredential).catchError(
-//       (error) {
-//         // setState(() {
-//         _isLoading = false;
-//         // });
+  bool getPinHasError() {
+    return _hasError;
+  }
 
-//         var errorMsg = '';
-//         print(error.toString());
-//         if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE'))
-//           errorMsg = 'الكود غير صحيح';
-//         else if (error.toString().contains('Network'))
-//           errorMsg = 'تحقق من إتصال الانترنت';
-//         else
-//           errorMsg = 'لقد حدث خطأ، حاول لاحقًا';
-//         _hasError = true;
+  GlobalKey getFormKey() {
+    return _formKey;
+  }
 
-//         errorDialog(errorMsg);
-//       },
-//     ).then(
-//       (user) async {
-//         if (user != null) {
-//           // Update data to server if new user
-//           print(user.additionalUserInfo.toString());
-//           print(user.user.getIdToken(refresh: true));
-//           // Write data to local
-//           _currentUser = user.user;
-//           // print(user.user.providerData.toString());
-//           if (user.additionalUserInfo.isNewUser) {
-//             // setState(() {
-//             _signedUp = true;
-//             _isLoading = false;
-//             // });
-//           } else {
-//             await _prefs.setString('id', _currentUser.uid);
-//           }
-//         }
-//       },
-//     );
-//   }
+  String getErrorMsg() {
+    return _errorMsg;
+  }
 
+  User getProfile() {
+    _user.name = _prefs.getString('name');
+    _user.phone = _prefs.getString('phone');
+    _user.id = _prefs.getString('id');
+    return _user;
+  }
 
-// }
+  void setProfile(User user) {
+    _user.phone = user.phone;
+    _user.name = user.name;
+    _user.id = user.id;
+
+    _prefs.setString('phone', _user.phone);
+    _prefs.setString('name', _user.name);
+    _prefs.setString('id', _user.id);
+  }
+}

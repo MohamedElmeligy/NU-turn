@@ -12,6 +12,7 @@ dependencies:
 
   dio: ^3.0.8
   introduction_screen: ^1.0.7
+  pin_code_text_field: ^1.5.1
 
   location_permissions: ^2.0.3
   location: ^2.3.5
