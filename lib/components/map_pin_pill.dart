@@ -19,27 +19,32 @@ class MapPinPillComponent extends StatelessWidget {
           margin: EdgeInsets.all(20),
           height: 70,
           decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(50)),
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                    blurRadius: 20,
-                    offset: Offset.zero,
-                    color: Colors.grey.withOpacity(0.5))
-              ]),
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(50)),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                blurRadius: 20,
+                offset: Offset.zero,
+                color: Colors.grey.withOpacity(0.5),
+              )
+            ],
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Container(
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.only(left: 10),
-                child: ClipOval(
+              if (mapProvider.currentlySelectedPin.avatarPath != "")
+                Container(
+                  width: 50,
+                  height: 50,
+                  margin: EdgeInsets.only(left: 10),
+                  child: ClipOval(
                     child: Image.asset(
-                        mapProvider.currentlySelectedPin.avatarPath,
-                        fit: BoxFit.cover)),
-              ),
+                      mapProvider.currentlySelectedPin.avatarPath,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
               Expanded(
                 child: Container(
                   margin: EdgeInsets.only(left: 20),
@@ -61,11 +66,15 @@ class MapPinPillComponent extends StatelessWidget {
                   ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.all(15),
-                child: Image.asset(mapProvider.currentlySelectedPin.pinPath,
-                    width: 50, height: 50),
-              )
+              if (mapProvider.currentlySelectedPin.pinPath != "")
+                Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Image.asset(
+                    mapProvider.currentlySelectedPin.pinPath,
+                    width: 50,
+                    height: 50,
+                  ),
+                )
             ],
           ),
         ),
