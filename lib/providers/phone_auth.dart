@@ -6,41 +6,53 @@
 // enum AuthMode { Confirm, Login }
 
 // class Auth with ChangeNotifier {
+//   final GlobalKey _formKey = GlobalKey();
+
 //   AuthMode _authMode = AuthMode.Login;
 //   Map<String, String> _authData = {'name': '', 'phone': '', 'uid': ''};
-//   bool _isLoading = false;
+
 //   bool _signedUp = false;
 //   bool _hasError = false;
+//   bool _isLoading = false;
+//   bool _isLoggedIn = false;
+
 //   final _phoneController = TextEditingController();
 //   final _nameController = TextEditingController();
+//   final _uniIdController = TextEditingController();
 //   final _codeController = TextEditingController();
 
-//   String smsCode;
+//   String _smsCode;
 //   AuthCredential _authCredential;
 //   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-//   String _smsCode_user;
+//   String _verificationCode;
+//   static SharedPreferences _prefs;
 
-//   //method 2
-
-//   // final GoogleSignIn googleSignIn = GoogleSignIn();
-//   // final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-//   SharedPreferences prefs;
-
-//   bool isLoading = false;
-//   bool isLoggedIn = false;
-//   FirebaseUser currentUser;
+//   FirebaseUser _currentUser;
 
 //   PhoneCodeSent _codeIsSent;
+//   PhoneCodeAutoRetrievalTimeout _codeAutoRetrievalTimeout;
+//   PhoneVerificationCompleted _verificationCompleted;
+//   PhoneVerificationFailed _verificationFailed;
+
+//   Future<void> init() async {
+//     _prefs = await SharedPreferences.getInstance();
+//     String name = _prefs.getString('name');
+//     print(name);
+
+//     // notifyListeners();
+//   }
+
+//   GlobalKey getkey(){
+//     return _formKey;
+//   }
 
 //   Future<void> verifyeNumber() async {
-//     _smsCode_sent = (String verificationId, [int forceResendingToken]) async {
-//       this._verificationId = verificationId;
-//       // print('Code sent to ${_phoneController.text}');
+//     _codeIsSent = (String verificationId, [int forceResendingToken]) async {
+//       this._verificationCode = verificationId;
 //     };
 
-//     final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =
-//         (String verificationId) {
-//       this._verificationId = verificationId;
+//     _codeAutoRetrievalTimeout = (String verificationId) {
+//       this._verificationCode = verificationId;
 //       // setState(() {
 //       _isLoading = false;
 //       _switchAuthMode();
@@ -48,64 +60,11 @@
 //     };
 
 //     //called when Auto verified
-//     final PhoneVerificationCompleted verificationCompleted =
-//         (AuthCredential auth) {
-//       _authCredential = auth;
-
-//       firebaseAuth.signInWithCredential(_authCredential).catchError(
-//         (error) {
-//           // setState(() {
-//           _isLoading = false;
-//           // });
-
-//           var errorMsg = '';
-//           print(error.toString());
-//           if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE'))
-//             errorMsg = 'الكود غير صحيح';
-//           else if (error.toString().contains('Network'))
-//             errorMsg = 'تحقق من إتصال الانترنت';
-//           else
-//             errorMsg = 'لقد حدث خطأ، حاول لاحقًا';
-//           _hasError = true;
-
-//           errorDialog(errorMsg);
-//         },
-//       ).then(
-//         (user) async {
-//           if (user != null) {
-//             // Update data to server if new user
-//             print(user.additionalUserInfo.toString());
-//             print(user.user.getIdToken(refresh: true));
-//             // Write data to local
-//             currentUser = user.user;
-//             // print(user.user.providerData.toString());
-//             if (user.additionalUserInfo.isNewUser) {
-//               // setState(() {
-//               _signedUp = true;
-//               _isLoading = false;
-//               // });
-//             } else {
-//               prefs = await SharedPreferences.getInstance();
-//               await prefs.setString('id', currentUser.uid);
-//               bool doc = prefs.getBool('doctor');
-
-//               // if (doc)
-//               //   Navigator.push(
-//               //       context,
-//               //       MaterialPageRoute(
-//               //           builder: (context) =>
-//               //               MainScreen(currentUserId: currentUser.uid)));
-//               // else
-//               //   Navigator.push(context,
-//               //       MaterialPageRoute(builder: (context) => Homepage()));
-//             }
-//           }
-//         },
-//       );
+//     _verificationCompleted = (AuthCredential auth) {
+//       _verification(auth);
 //     };
 
-//     final PhoneVerificationFailed verificationFailed =
-//         (AuthException authException) {
+//     _verificationFailed = (AuthException authException) {
 //       print(authException.message);
 //       if (authException.message.contains('blocked')) {
 //         // setState(() {
@@ -117,60 +76,21 @@
 
 //     await firebaseAuth.verifyPhoneNumber(
 //       phoneNumber: _authData['phone'],
-//       timeout: const Duration(seconds: 2),
-//       codeSent: smsCodeSent,
-//       codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
-//       verificationCompleted: verificationCompleted,
-//       verificationFailed: verificationFailed,
+//       timeout: const Duration(milliseconds: 0),
+//       codeSent: _codeIsSent,
+//       codeAutoRetrievalTimeout: _codeAutoRetrievalTimeout,
+//       verificationCompleted: _verificationCompleted,
+//       verificationFailed: _verificationFailed,
 //     );
+  
 //   }
 
 //   signInManually() async {
-//     _authCredential = PhoneAuthProvider.getCredential(
-//         verificationId: _verificationId, smsCode: smsCode);
-
-//     firebaseAuth.signInWithCredential(_authCredential).catchError(
-//       (error) {
-//         var errorMsg = '';
-//         print(error.message.toString());
-//         if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE'))
-//           errorMsg = 'الكود غير صحيح';
-//         else if (error.toString().contains('Network'))
-//           errorMsg = 'تحقق من إتصال الانترنت';
-//         else
-//           errorMsg = 'لقد حدث خطأ، حاول لاحقًا';
-//         _hasError = true;
-//         // setState(() {
-//         _isLoading = false;
-//         _hasError = true;
-//         _codeController.clear();
-//         // });
-
-//         errorDialog(errorMsg);
-//       },
-//     ).then((user) async {
-//       if (user != null) {
-//         currentUser = user.user;
-//         // Check is already sign up
-//         if (user.additionalUserInfo.isNewUser) {
-//           // setState(() {
-//           _signedUp = true;
-//           _isLoading = false;
-//           // });
-//         } else {
-//           prefs = await SharedPreferences.getInstance();
-//           prefs.setString('id', currentUser.uid);
-//           // Navigator.push(
-//           //     context,
-//           //     MaterialPageRoute(
-//           //         builder: (context) =>
-//           //             MainScreen(currentUserId: prefs.getString('id'))));
-//         }
-//       }
-//     });
+//     _verification(PhoneAuthProvider.getCredential(
+//         verificationId: _verificationCode, smsCode: _smsCode));
 //   }
 
-//   void _submit() async {
+//   void submit() async {
 //     if (!_formKey.currentState.validate()) {
 //       // Invalid!
 //       return;
@@ -232,4 +152,48 @@
 //       ),
 //     );
 //   }
+
+//   void _verification(AuthCredential auth) {
+//     _authCredential = auth;
+//     firebaseAuth.signInWithCredential(_authCredential).catchError(
+//       (error) {
+//         // setState(() {
+//         _isLoading = false;
+//         // });
+
+//         var errorMsg = '';
+//         print(error.toString());
+//         if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE'))
+//           errorMsg = 'الكود غير صحيح';
+//         else if (error.toString().contains('Network'))
+//           errorMsg = 'تحقق من إتصال الانترنت';
+//         else
+//           errorMsg = 'لقد حدث خطأ، حاول لاحقًا';
+//         _hasError = true;
+
+//         errorDialog(errorMsg);
+//       },
+//     ).then(
+//       (user) async {
+//         if (user != null) {
+//           // Update data to server if new user
+//           print(user.additionalUserInfo.toString());
+//           print(user.user.getIdToken(refresh: true));
+//           // Write data to local
+//           _currentUser = user.user;
+//           // print(user.user.providerData.toString());
+//           if (user.additionalUserInfo.isNewUser) {
+//             // setState(() {
+//             _signedUp = true;
+//             _isLoading = false;
+//             // });
+//           } else {
+//             await _prefs.setString('id', _currentUser.uid);
+//           }
+//         }
+//       },
+//     );
+//   }
+
+
 // }

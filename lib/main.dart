@@ -8,6 +8,7 @@ import './providers/map.dart';
 
 import './screens/map_screen.dart';
 import './screens/test.dart';
+import './screens/auth_screen.dart';
 
 void main() {
   debugPaintSizeEnabled = false;
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Test(),
+        home: LoginPage(),
       ),
     );
   }
