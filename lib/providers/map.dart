@@ -114,6 +114,7 @@ class MapProvider with ChangeNotifier {
     if (remove) {
       _markers.remove('myPin');
       _requestedRide = false;
+      updatePinsOnMap(true);
     } else {
       _requestedRide = true;
       _markers.update(
@@ -137,9 +138,8 @@ class MapProvider with ChangeNotifier {
           icon: myLocationIcon,
         ),
       );
+      updatePinsOnMap(false);
     }
-
-    updatePinsOnMap(false);
 
     addingMyRequest = false;
     notifyListeners();
