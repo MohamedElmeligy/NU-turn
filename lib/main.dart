@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
-
 import 'package:provider/provider.dart';
 
 import './providers/map.dart';
 import './providers/phone_auth.dart';
 
-import './screens/map_screen.dart';
-import './screens/test.dart';
 import './screens/auth_screen.dart';
+import './screens/map_screen.dart';
 
 void main() {
   debugPaintSizeEnabled = false;
@@ -44,9 +42,15 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: LoginPage(),
-      ),
+          debugShowCheckedModeBanner: false,
+          home: Consumer<Auth>(
+            builder: (ctx, auth, ch) {
+              return FutureBuilder(
+                  future: auth.getIsLoggedIn(),
+                  builder: (ctx, result) =>
+                      result.data == true ? MapScreen() : LoginPage());
+            },
+          )),
     );
   }
 }
