@@ -116,26 +116,14 @@ class Auth with ChangeNotifier {
         // errorDialog(errorMsg);
       },
     ).then(
-      (data) {
-        if (data != null) {
-          _user.userId = data.user.uid;
-          _prefs.setString('userId', _user.userId);
+      (user) {
+        if (user != null) {
           _isLoading = false;
           _loginSuccess = true;
           notifyListeners();
         }
       },
     );
-  }
-
-  Future<bool> getIsLoggedIn() async {
-    _prefs = await SharedPreferences.getInstance();
-    String x = _prefs.getString('phone');
-    if (x != null)
-      _isLoggedIn = true;
-    else
-      _isLoggedIn = false;
-    return _isLoggedIn;
   }
 
   bool getShowPins(bool autoVerified) {
@@ -208,9 +196,5 @@ class Auth with ChangeNotifier {
     _prefs.setString('phone', _user.phone);
     _prefs.setString('name', _user.name);
     _prefs.setString('id', _user.id);
-  }
-
-  void signout() {
-    _prefs.clear();
   }
 }
