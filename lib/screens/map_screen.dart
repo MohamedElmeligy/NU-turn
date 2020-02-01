@@ -48,7 +48,7 @@ class MapScreen extends StatelessWidget {
             left: 15,
             child: IconButton(
               onPressed: () {
-                Provider.of<Auth>(context).signout();
+                Provider.of<Auth>(context, listen: false).signout();
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                     builder: (context) => LoginPage(),
