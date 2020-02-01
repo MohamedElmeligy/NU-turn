@@ -9,7 +9,7 @@ class Auth with ChangeNotifier {
   Auth() {
     init();
   }
-  final GlobalKey _formKey = GlobalKey();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   static User _user;
 

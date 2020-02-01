@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Consumer<Auth>(
         builder: (ctx, auth, ch) {
           Key _form = auth.getFormKey();
-          FormState _formState = auth.getFormKey().currentState;
+          //FormState _formState = ;
 
           TextEditingController _phoneController = auth.getPhoneController();
           TextEditingController _nameController = auth.getNameController();
@@ -62,31 +62,40 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           void submit() async {
-            if (!_formState.validate()) {
+
+            // if form fields validation fails, get out
+            if (!(auth.getFormKey().currentState as FormState).validate()) {
               // Invalid!
               return;
             }
-            _formState.save();
+
+            // else, proceed
+            (auth.getFormKey().currentState as FormState).save();
 
             User _user = new User(phone: "+20$_phone", name: _name, id: _id);
 
+            // first, try to login
             auth.setProfile(_user);
             if (!_showPins)
               await auth.automaticSignIn();
             else
               await auth.manualSignIn();
 
+            // in case of an error, show it to user
             if (_showDialog) {
               //show errorDialog
               errorDialog(_errorMsg);
               auth.setShowDialog(false);
             }
 
+            // if, successfully, logged in, direct to the "MAP SCREEN"
             if (_loggedIn) {
               //Navigate
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => MapScreen()),
+                MaterialPageRoute(
+                  builder: (context) => MapScreen(),
+                ),
               );
             }
           }
