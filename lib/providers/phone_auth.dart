@@ -65,7 +65,7 @@ class Auth with ChangeNotifier {
 
     //called when Auto verified
     _verificationCompleted = (AuthCredential auth) async {
-      await _verification(auth);
+      _verification(auth);
     };
 
     _verificationFailed = (AuthException authException) {
@@ -74,7 +74,7 @@ class Auth with ChangeNotifier {
 
       _errorMsg = "Tried Logging in frequently, please try again later!";
       notifyListeners();
-      return false;
+      _loginSuccess = false;
     };
 
     await firebaseAuth.verifyPhoneNumber(
@@ -85,18 +85,20 @@ class Auth with ChangeNotifier {
       verificationCompleted: _verificationCompleted,
       verificationFailed: _verificationFailed,
     );
+
+    return _isLoggedIn;
   }
 
   Future<bool> manualSignIn() async {
     _isLoading = true;
     notifyListeners();
-    await _verification(PhoneAuthProvider.getCredential(
+    return await _verification(PhoneAuthProvider.getCredential(
         verificationId: _verificationCode, smsCode: _smsCode));
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> _verification(AuthCredential auth) {
+  Future<bool> _verification(AuthCredential auth) async {
     _authCredential = auth;
     firebaseAuth.signInWithCredential(_authCredential).catchError(
       (error) {
@@ -114,7 +116,7 @@ class Auth with ChangeNotifier {
         _isLoading = false;
         notifyListeners();
         print("error");
-        return false;
+        _loginSuccess = false;
 
         // errorDialog(errorMsg);
       },
@@ -125,12 +127,11 @@ class Auth with ChangeNotifier {
           notifyListeners();
           _loginSuccess = true;
           print("success");
-          return true;
+          _loginSuccess = true;
         }
-        print("saddddddddddddddddsa");
-        return false;
       },
     );
+    return _loginSuccess;
   }
 
   bool getShowpins() {

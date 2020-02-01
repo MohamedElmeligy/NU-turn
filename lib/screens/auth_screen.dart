@@ -70,12 +70,12 @@ class LoginPage extends StatelessWidget {
 
             auth.setProfile(_user);
             if (!_showPins) {
-              // bool x = ;
-              print(await auth.automaticSignIn());
-              return await auth.automaticSignIn();
+              bool x = await auth.automaticSignIn();
+              print(x.toString() + "d111111111111111111111111");
+              return x;
             } else {
               bool x = await auth.manualSignIn();
-              print(x.toString()+"2222222222222");
+              print(x.toString() + "2222222222222");
               return x;
             }
           }
@@ -93,8 +93,9 @@ class LoginPage extends StatelessWidget {
                   InkWell(
                     onTap: () async {
                       submit().then((x) {
+                        print(x.toString()+ "ontaaaaaaaaaaaaaaaaaaaaaap");
                         if (x) {
-                          print("success");
+                          print("success in screeeeeen");
                           Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
