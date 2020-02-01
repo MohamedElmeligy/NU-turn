@@ -11,6 +11,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Consumer<Auth>(
@@ -26,7 +27,7 @@ class LoginPage extends StatelessWidget {
 
           bool _loading = auth.getIsLoading();
           bool _showDialog = auth.getShowDialog();
-          bool _loggedIn = auth.getLoginSuccess();
+          bool _loggedIn = false;
           bool _showPins = auth.getShowpins();
           bool _pinHasError = auth.getPinHasError();
           String _errorMsg = auth.getErrorMsg();
@@ -58,20 +59,25 @@ class LoginPage extends StatelessWidget {
             );
           }
 
-          Future<void> submit() async {
+          Future<bool> submit() async {
             if (!_formState.validate()) {
               // Invalid!
-              return;
+              return false;
             }
             _formState.save();
 
             User _user = new User(phone: "+20$_phone", name: _name, id: _id);
 
             auth.setProfile(_user);
-            if (!_showPins)
-              await auth.automaticSignIn();
-            else
-              await auth.manualSignIn();
+            if (!_showPins) {
+              // bool x = ;
+              print(await auth.automaticSignIn());
+              return await auth.automaticSignIn();
+            } else {
+              bool x = await auth.manualSignIn();
+              print(x.toString()+"2222222222222");
+              return x;
+            }
           }
 
           _getSignIn(context) {
@@ -82,26 +88,21 @@ class LoginPage extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     'Sign in',
-                    style:
-                        TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
                   ),
                   InkWell(
                     onTap: () async {
-                      await submit().then((_) {
-                        
-                        if (_showDialog) {
-                          //show errorDialog
-                          errorDialog(_errorMsg);
-                          auth.setShowDialog(false);
-                        }
-
-                        if (_loggedIn) {
-                          //Navigate
+                      submit().then((x) {
+                        if (x) {
+                          print("success");
                           Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => MapScreen()),
-                          );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MapScreen()));
+                        }
+                        if (!x && _errorMsg != "") {
+                          print("not success");
+                          errorDialog(_errorMsg);
                         }
                       });
                     },

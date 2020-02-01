@@ -48,7 +48,7 @@ class Auth with ChangeNotifier {
     // notifyListeners();
   }
 
-  Future<void> automaticSignIn() async {
+  Future<bool> automaticSignIn() async {
     _isLoading = true;
     notifyListeners();
 
@@ -64,16 +64,17 @@ class Auth with ChangeNotifier {
     };
 
     //called when Auto verified
-    _verificationCompleted = (AuthCredential auth) {
-      _verification(auth);
+    _verificationCompleted = (AuthCredential auth) async {
+      await _verification(auth);
     };
 
     _verificationFailed = (AuthException authException) {
       print(authException.message);
       _isLoading = false;
-      _showDialog = true;
+
       _errorMsg = "Tried Logging in frequently, please try again later!";
       notifyListeners();
+      return false;
     };
 
     await firebaseAuth.verifyPhoneNumber(
@@ -86,7 +87,7 @@ class Auth with ChangeNotifier {
     );
   }
 
-  Future<void> manualSignIn() async {
+  Future<bool> manualSignIn() async {
     _isLoading = true;
     notifyListeners();
     await _verification(PhoneAuthProvider.getCredential(
@@ -109,9 +110,11 @@ class Auth with ChangeNotifier {
           _errorMsg = 'Error, please try again later!';
 
         print('error: ' + _errorMsg);
-        _showDialog = true;
+
         _isLoading = false;
         notifyListeners();
+        print("error");
+        return false;
 
         // errorDialog(errorMsg);
       },
@@ -119,9 +122,13 @@ class Auth with ChangeNotifier {
       (user) {
         if (user != null) {
           _isLoading = false;
-          _loginSuccess = true;
           notifyListeners();
+          _loginSuccess = true;
+          print("success");
+          return true;
         }
+        print("saddddddddddddddddsa");
+        return false;
       },
     );
   }
