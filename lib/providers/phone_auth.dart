@@ -126,10 +126,6 @@ class Auth with ChangeNotifier {
     );
   }
 
-  bool getShowPins(bool autoVerified) {
-    return autoVerified;
-  }
-
   bool getShowpins() {
     return _showPins;
   }
