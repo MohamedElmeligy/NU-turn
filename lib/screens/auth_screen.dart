@@ -13,264 +13,262 @@ class LoginPage extends StatelessWidget {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
-        child: Consumer<Auth>(
-          builder: (ctx, auth, ch) {
-            Key _form = auth.getFormKey();
-            FormState _formState = auth.getFormKey().currentState;
+      body: Consumer<Auth>(
+        builder: (ctx, auth, ch) {
+          Key _form = auth.getFormKey();
+          FormState _formState = auth.getFormKey().currentState;
 
-            TextEditingController _phoneController = auth.getPhoneController();
-            TextEditingController _nameController = auth.getNameController();
-            TextEditingController _idController = auth.getIdController();
+          TextEditingController _phoneController = auth.getPhoneController();
+          TextEditingController _nameController = auth.getNameController();
+          TextEditingController _idController = auth.getIdController();
 
-            String _name, _phone, _id;
+          String _name, _phone, _id;
 
-            bool _loading = auth.getIsLoading();
-            bool _showDialog = auth.getShowDialog();
-            bool _loggedIn = auth.getLoginSuccess();
-            bool _showPins = auth.getShowpins();
-            bool _pinHasError = auth.getPinHasError();
-            String _errorMsg = auth.getErrorMsg();
+          bool _loading = auth.getIsLoading();
+          bool _showDialog = auth.getShowDialog();
+          bool _loggedIn = auth.getLoginSuccess();
+          bool _showPins = auth.getShowpins();
+          bool _pinHasError = auth.getPinHasError();
+          String _errorMsg = auth.getErrorMsg();
 
-            void errorDialog(String msg) {
-              showDialog(
-                context: ctx,
-                builder: (ctx) => Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: AlertDialog(
-                    title: Text(
-                      'خطأ',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    content: Text(
-                      msg,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    actions: <Widget>[
-                      FlatButton(
-                        child: Text('حسنا'),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                        },
-                      )
-                    ],
+          void errorDialog(String msg) {
+            showDialog(
+              context: ctx,
+              builder: (ctx) => Directionality(
+                textDirection: TextDirection.rtl,
+                child: AlertDialog(
+                  title: Text(
+                    'خطأ',
+                    style: TextStyle(fontSize: 20),
                   ),
-                ),
-              );
-            }
-
-            Future<void> submit() async {
-              if (!_formState.validate()) {
-                // Invalid!
-                return;
-              }
-              _formState.save();
-
-              User _user = new User(phone: "+20$_phone", name: _name, id: _id);
-
-              auth.setProfile(_user);
-              if (!_showPins)
-                await auth.automaticSignIn();
-              else
-                await auth.manualSignIn();
-            }
-
-            _getSignIn(context) {
-              return Container(
-                height: screenHeight * 0.15,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      'Sign in',
-                      style:
-                          TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
-                    ),
-                    InkWell(
-                      onTap: () async {
-                        await submit().then((_) {
-                          
-                          if (_showDialog) {
-                            //show errorDialog
-                            errorDialog(_errorMsg);
-                            auth.setShowDialog(false);
-                          }
-
-                          if (_loggedIn) {
-                            //Navigate
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MapScreen()),
-                            );
-                          }
-                        });
+                  content: Text(
+                    msg,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text('حسنا'),
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
                       },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.grey.shade800,
-                        radius: 40,
-                        child: Icon(
-                          Icons.arrow_forward,
-                          color: Colors.white,
-                        ),
-                      ),
                     )
                   ],
                 ),
-              );
-            }
+              ),
+            );
+          }
 
-            _getTextFields() {
-              return Container(
-                height: screenHeight * 0.45,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 15,
-                    ),
-                    TextFormField(
-                      controller: _phoneController,
-                      validator: (value) {
-                        if (value.length != 11) {
-                          return 'Invalid Number';
-                        }
-                      },
-                      decoration: InputDecoration(labelText: 'Phone'),
-                      onChanged: (value) {
-                        _phone = value;
-                      },
-                      onSaved: (value) {
-                        _phone = value;
-                      },
-                    ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    TextFormField(
-                      controller: _nameController,
-                      validator: (value) {
-                        if (value.length < 5) {
-                          return 'Please Enter Full Name';
-                        }
-                      },
-                      decoration: InputDecoration(labelText: 'Name'),
-                      onChanged: (value) {
-                        _name = value;
-                      },
-                    ),
-                    SizedBox(
-                      height: 25,
-                    ),
-                    TextFormField(
-                      controller: _idController,
-                      validator: (value) {
-                        if (value.length != 8) {
-                          return 'Invalid ID';
-                        }
-                      },
-                      decoration: InputDecoration(labelText: 'University ID'),
-                      onChanged: (value) {
-                        _id = value;
-                      },
-                    ),
-                    SizedBox(
-                      height: 25,
-                    ),
-                  ],
-                ),
-              );
+          Future<void> submit() async {
+            if (!_formState.validate()) {
+              // Invalid!
+              return;
             }
+            _formState.save();
 
-            _getPinField() {
-              return Container(
-                height: screenHeight * 0.45,
-                child: Center(
-                  child: Container(
-                    height: 70,
-                    child: PinCodeTextField(
-                      pinBoxWidth: 30,
-                      pinBoxHeight: 50,
-                      autofocus: true,
-                      highlight: true,
-                      highlightColor: Colors.blue,
-                      defaultBorderColor: Colors.black,
-                      hasTextBorderColor: Colors.green,
-                      hasError: _pinHasError,
-                      maxLength: 6,
-                      pinTextAnimatedSwitcherTransition:
-                          ProvidedPinBoxTextAnimation.scalingTransition,
-                      pinTextAnimatedSwitcherDuration:
-                          Duration(milliseconds: 200),
-                      highlightAnimationBeginColor: Colors.blue,
-                      highlightAnimationEndColor: Colors.black87,
-                      highlightAnimationDuration: Duration(milliseconds: 1000),
-                      keyboardType: TextInputType.phone,
-                      onDone: (String s) {
-                        auth.setSmsCode(s);
-                      },
-                    ),
+            User _user = new User(phone: "+20$_phone", name: _name, id: _id);
+
+            auth.setProfile(_user);
+            if (!_showPins)
+              await auth.automaticSignIn();
+            else
+              await auth.manualSignIn();
+          }
+
+          _getSignIn(context) {
+            return Container(
+              height: screenHeight * 0.15,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    'Sign in',
+                    style:
+                        TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
                   ),
-                ),
-              );
-            }
+                  InkWell(
+                    onTap: () async {
+                      await submit().then((_) {
+                        
+                        if (_showDialog) {
+                          //show errorDialog
+                          errorDialog(_errorMsg);
+                          auth.setShowDialog(false);
+                        }
 
-            _getCircle() {
-              return Container(
-                height: screenHeight * 0.5,
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-
-            _getHeader() {
-              return Container(
-                height: screenHeight * 0.3,
-                child: Container(
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    'Welcome\nBack',
-                    style: TextStyle(color: Colors.white, fontSize: 40),
-                  ),
-                ),
-              );
-            }
-
-            return Scaffold(
-              backgroundColor: Colors.grey.shade100,
-              body: Container(
-                height: screenHeight,
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _form,
-                    child: CustomPaint(
-                      painter: BackgroundSignIn(),
-                      child: Stack(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 35),
-                            child: Column(
-                              children: <Widget>[
-                                _getHeader(),
-                                _loading
-                                    ? _getCircle()
-                                    : !_showPins
-                                        ? _getTextFields()
-                                        : _getPinField(),
-                                _getSignIn(context),
-                              ],
-                            ),
-                          ),
-                        ],
+                        if (_loggedIn) {
+                          //Navigate
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MapScreen()),
+                          );
+                        }
+                      });
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.grey.shade800,
+                      radius: 40,
+                      child: Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
                       ),
                     ),
+                  )
+                ],
+              ),
+            );
+          }
+
+          _getTextFields() {
+            return Container(
+              height: screenHeight * 0.45,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    controller: _phoneController,
+                    validator: (value) {
+                      if (value.length != 11) {
+                        return 'Invalid Number';
+                      }
+                    },
+                    decoration: InputDecoration(labelText: 'Phone'),
+                    onChanged: (value) {
+                      _phone = value;
+                    },
+                    onSaved: (value) {
+                      _phone = value;
+                    },
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    controller: _nameController,
+                    validator: (value) {
+                      if (value.length < 5) {
+                        return 'Please Enter Full Name';
+                      }
+                    },
+                    decoration: InputDecoration(labelText: 'Name'),
+                    onChanged: (value) {
+                      _name = value;
+                    },
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  TextFormField(
+                    controller: _idController,
+                    validator: (value) {
+                      if (value.length != 8) {
+                        return 'Invalid ID';
+                      }
+                    },
+                    decoration: InputDecoration(labelText: 'University ID'),
+                    onChanged: (value) {
+                      _id = value;
+                    },
+                  ),
+                  SizedBox(
+                    height: 25,
+                  ),
+                ],
+              ),
+            );
+          }
+
+          _getPinField() {
+            return Container(
+              height: screenHeight * 0.45,
+              child: Center(
+                child: Container(
+                  height: 70,
+                  child: PinCodeTextField(
+                    pinBoxWidth: 30,
+                    pinBoxHeight: 50,
+                    autofocus: true,
+                    highlight: true,
+                    highlightColor: Colors.blue,
+                    defaultBorderColor: Colors.black,
+                    hasTextBorderColor: Colors.green,
+                    hasError: _pinHasError,
+                    maxLength: 6,
+                    pinTextAnimatedSwitcherTransition:
+                        ProvidedPinBoxTextAnimation.scalingTransition,
+                    pinTextAnimatedSwitcherDuration:
+                        Duration(milliseconds: 200),
+                    highlightAnimationBeginColor: Colors.blue,
+                    highlightAnimationEndColor: Colors.black87,
+                    highlightAnimationDuration: Duration(milliseconds: 1000),
+                    keyboardType: TextInputType.phone,
+                    onDone: (String s) {
+                      auth.setSmsCode(s);
+                    },
                   ),
                 ),
               ),
             );
-          },
-        ),
+          }
+
+          _getCircle() {
+            return Container(
+              height: screenHeight * 0.5,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+
+          _getHeader() {
+            return Container(
+              height: screenHeight * 0.3,
+              child: Container(
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  'Welcome\nBack',
+                  style: TextStyle(color: Colors.white, fontSize: 40),
+                ),
+              ),
+            );
+          }
+
+          return Scaffold(
+            backgroundColor: Colors.grey.shade100,
+            body: Container(
+              height: screenHeight,
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _form,
+                  child: CustomPaint(
+                    painter: BackgroundSignIn(),
+                    child: Stack(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 35),
+                          child: Column(
+                            children: <Widget>[
+                              _getHeader(),
+                              _loading
+                                  ? _getCircle()
+                                  : !_showPins
+                                      ? _getTextFields()
+                                      : _getPinField(),
+                              _getSignIn(context),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
