@@ -8,6 +8,9 @@ import './bottom_map_screen.dart';
 import '../components/map_pin_pill.dart';
 import '../utils/map.dart';
 
+import '../providers/phone_auth.dart';
+import '../screens/auth_screen.dart';
+
 class MapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -44,7 +47,14 @@ class MapScreen extends StatelessWidget {
             top: 30,
             left: 15,
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Provider.of<Auth>(context).signout();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => LoginPage(),
+                  ),
+                );
+              },
               color: Colors.transparent,
               icon: Icon(
                 Icons.person,
