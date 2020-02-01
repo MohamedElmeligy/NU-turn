@@ -112,6 +112,28 @@ class MapProvider with ChangeNotifier {
     addingMyRequest = true;
     notifyListeners();
 
+    bool permission = await myLocation.hasPermission().then((hasPermission) {
+      if (hasPermission) return true;
+      return myLocation.requestPermission();
+    });
+
+    if (!permission) {
+      addingMyRequest = false;
+      notifyListeners();
+      return;
+    }
+
+    bool service = await myLocation.serviceEnabled().then((serviceEnabled) {
+      if (serviceEnabled) return true;
+      return myLocation.requestService();
+    });
+
+    if (!service) {
+      addingMyRequest = false;
+      notifyListeners();
+      return;
+    }
+
     myLocationData = await myLocation.getLocation();
     myPosition = LatLng(myLocationData.latitude, myLocationData.longitude);
 
