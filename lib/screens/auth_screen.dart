@@ -14,6 +14,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Consumer<Auth>(
@@ -72,28 +74,42 @@ class _LoginPageState extends State<LoginPage> {
 
             auth.setProfile(_user);
             if (!_showPins)
-              await auth.automaticSignIn();
+              await auth.automaticSignIn().then((onValue) {
+                if (_showDialog) {
+                  //show errorDialog
+                  errorDialog(_errorMsg);
+                  auth.setShowDialog(false);
+                }
+
+                if (_loggedIn) {
+                  //Navigate
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => MapScreen()),
+                  );
+                }
+              });
             else
-              await auth.manualSignIn();
+              await auth.manualSignIn().then((onValue) {
+                if (_showDialog) {
+                  //show errorDialog
+                  errorDialog(_errorMsg);
+                  auth.setShowDialog(false);
+                }
 
-            if (_showDialog) {
-              //show errorDialog
-              errorDialog(_errorMsg);
-              auth.setShowDialog(false);
-            }
-
-            if (_loggedIn) {
-              //Navigate
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => MapScreen()),
-              );
-            }
+                if (_loggedIn) {
+                  //Navigate
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => MapScreen()),
+                  );
+                }
+              });
           }
 
           _getSignIn(context) {
-            return Expanded(
-              flex: 1,
+            return Container(
+              height: screenHeight * 0.15,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -120,8 +136,8 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           _getTextFields() {
-            return Expanded(
-              flex: 4,
+            return Container(
+              height: screenHeight * 0.45,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
@@ -182,68 +198,86 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           _getPinField() {
-            return Expanded(
-              flex: 4,
+            return Container(
+              height: screenHeight * 0.45,
               child: Center(
-                child: PinCodeTextField(
-                  pinBoxWidth: 30,
-                  pinBoxHeight: 50,
-                  autofocus: true,
-                  highlight: true,
-                  highlightColor: Colors.blue,
-                  defaultBorderColor: Colors.black,
-                  hasTextBorderColor: Colors.green,
-                  hasError: _pinHasError,
-                  maxLength: 6,
-                  pinTextAnimatedSwitcherTransition:
-                      ProvidedPinBoxTextAnimation.scalingTransition,
-                  pinTextAnimatedSwitcherDuration: Duration(milliseconds: 200),
-                  highlightAnimationBeginColor: Colors.blue,
-                  highlightAnimationEndColor: Colors.black87,
-                  highlightAnimationDuration: Duration(milliseconds: 1000),
-                  keyboardType: TextInputType.phone,
-                  onDone: (String s) {
-                    auth.setSmsCode(s);
-                  },
+                child: Container(
+                  height: 70,
+                  child: PinCodeTextField(
+                    pinBoxWidth: 30,
+                    pinBoxHeight: 50,
+                    autofocus: true,
+                    highlight: true,
+                    highlightColor: Colors.blue,
+                    defaultBorderColor: Colors.black,
+                    hasTextBorderColor: Colors.green,
+                    hasError: _pinHasError,
+                    maxLength: 6,
+                    pinTextAnimatedSwitcherTransition:
+                        ProvidedPinBoxTextAnimation.scalingTransition,
+                    pinTextAnimatedSwitcherDuration:
+                        Duration(milliseconds: 200),
+                    highlightAnimationBeginColor: Colors.blue,
+                    highlightAnimationEndColor: Colors.black87,
+                    highlightAnimationDuration: Duration(milliseconds: 1000),
+                    keyboardType: TextInputType.phone,
+                    onDone: (String s) {
+                      auth.setSmsCode(s);
+                    },
+                  ),
                 ),
               ),
             );
           }
 
           _getCircle() {
-            return Expanded(
-              flex: 4,
+            return Container(
+              height: screenHeight * 0.5,
               child: Center(
                 child: CircularProgressIndicator(),
               ),
             );
           }
 
-          return Container(
-            height: MediaQuery.of(context).size.height,
-            child: Form(
-              key: _form,
-              child: CustomPaint(
-                painter: BackgroundSignIn(),
-                child: Stack(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 35),
-                      child: Column(
-                        children: <Widget>[
-                          _getHeader(),
-                          _loading
-                              ? _getCircle()
-                              : !_showPins ? _getTextFields() : _getPinField(),
-                          _getSignIn(context),
-                          _getBottomRow(),
-                        ],
+          _getHeader() {
+            return Container(
+              height: screenHeight * 0.3,
+              child: Container(
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  'Welcome\nBack',
+                  style: TextStyle(color: Colors.white, fontSize: 40),
+                ),
+              ),
+            );
+          }
+
+          return Scaffold(
+            backgroundColor: Colors.grey.shade100,
+            body: SingleChildScrollView(
+              physics: NeverScrollableScrollPhysics(),
+              child: Form(
+                key: _form,
+                child: CustomPaint(
+                  painter: BackgroundSignIn(),
+                  child: Stack(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 35),
+                        child: Column(
+                          children: <Widget>[
+                            _getHeader(),
+                            _loading
+                                ? _getCircle()
+                                : !_showPins
+                                    ? _getTextFields()
+                                    : _getPinField(),
+                            _getSignIn(context),
+                          ],
+                        ),
                       ),
-                    ),
-                    // _loading
-                    //     ? Center(child: CircularProgressIndicator())
-                    //     : Container(),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -252,26 +286,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-}
-
-_getBottomRow() {
-  return Expanded(
-    flex: 1,
-    child: SizedBox(),
-  );
-}
-
-_getHeader() {
-  return Expanded(
-    flex: 3,
-    child: Container(
-      alignment: Alignment.bottomLeft,
-      child: Text(
-        'Welcome\nBack',
-        style: TextStyle(color: Colors.white, fontSize: 40),
-      ),
-    ),
-  );
 }
 
 class BackgroundSignIn extends CustomPainter {
