@@ -197,4 +197,8 @@ class Auth with ChangeNotifier {
     _prefs.setString('name', _user.name);
     _prefs.setString('id', _user.id);
   }
+
+  void signout() {
+    _prefs.clear();
+  }
 }
