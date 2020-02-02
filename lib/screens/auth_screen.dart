@@ -76,7 +76,7 @@ class LoginPage extends StatelessWidget {
 
             _formState.save();
 
-            User _user = new User(phone: "+20$_phone", name: _name, id: _id);
+            User _user = new User(phone: "+2$_phone", name: _name, id: _id);
 
             auth.setProfile(_user);
             if (!_showPins) {

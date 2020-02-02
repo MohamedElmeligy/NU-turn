@@ -4,7 +4,6 @@ import 'package:flutter/rendering.dart';
 
 import 'package:provider/provider.dart';
 
-import './providers/map.dart';
 import './providers/phone_auth.dart';
 
 import './screens/auth_screen.dart';

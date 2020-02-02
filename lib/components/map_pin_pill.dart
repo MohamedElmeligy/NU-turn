@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/map.dart';
 
@@ -50,33 +51,32 @@ class MapPinPillComponent extends StatelessWidget {
                   margin: EdgeInsets.only(left: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
                         mapProvider.currentlySelectedPin.name ?? "",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: Colors.deepPurple,
                         ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            mapProvider.currentlySelectedPin.phone ?? "",
-                            style: TextStyle(
-                              fontSize: 16,
-                            ),
+                      const SizedBox(height: 5),
+                      /* Text(
+                        mapProvider.currentlySelectedPin.phone ?? "",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ), */
+                      if (mapProvider.currentlySelectedPin.id != "")
+                        Text(
+                          'ID: ${mapProvider.currentlySelectedPin.id}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
                           ),
-                          if (mapProvider.currentlySelectedPin.id != null)
-                            Text(
-                              mapProvider.currentlySelectedPin.id,
-                              style: TextStyle(
-                                fontSize: 14,
-                              ),
-                            ),
-                        ],
-                      )
+                        ),
                     ],
                   ),
                 ),
@@ -84,9 +84,22 @@ class MapPinPillComponent extends StatelessWidget {
               if (mapProvider.currentlySelectedPin.pinPath != "")
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 25),
-                  child: Icon(
-                    Icons.call,
-                    size: 40,
+                  child: IconButton(
+                    onPressed: () async {
+                      String url =
+                          'tel:${mapProvider.currentlySelectedPin.phone}';
+                      if (await canLaunch(url)) {
+                        await launch(url);
+                      } else {
+                        throw 'Could not launch $url';
+                      }
+                    },
+                    padding: const EdgeInsets.all(0),
+                    icon: Icon(
+                      Icons.call,
+                      size: 36,
+                      color: Colors.deepPurple,
+                    ),
                   ),
                 )
             ],

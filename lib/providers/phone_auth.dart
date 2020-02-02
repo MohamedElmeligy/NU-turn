@@ -206,10 +206,11 @@ class Auth with ChangeNotifier {
     _showDialog = showDialog;
   }
 
-  void setProfile(User user) {
-    user.phone = user.phone;
-    user.name = user.name;
-    user.id = user.id;
+  void setProfile(User newUser) {
+    print(newUser.phone);
+    user.phone = newUser.phone;
+    user.name = newUser.name;
+    user.id = newUser.id;
     _prefs.setString('phone', user.phone);
     _prefs.setString('name', user.name);
     _prefs.setString('id', user.id);
