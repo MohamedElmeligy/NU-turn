@@ -48,7 +48,7 @@ class Auth with ChangeNotifier {
     // notifyListeners();
   }
 
-  Future<bool> automaticSignIn(Function goToMap, Function errorDialog) async {
+  Future<void> automaticSignIn(Function goToMap, Function errorDialog) async {
     _isLoading = true;
     notifyListeners();
 
@@ -92,15 +92,23 @@ class Auth with ChangeNotifier {
       verificationCompleted: _verificationCompleted,
       verificationFailed: _verificationFailed,
     );
-
-    return _isLoggedIn;
   }
 
-  Future<bool> manualSignIn(Function goToMap, Function errorDialog) async {
+  Future<void> manualSignIn(Function goToMap, Function errorDialog) async {
     _isLoading = true;
     notifyListeners();
-    return await _verification(PhoneAuthProvider.getCredential(
-        verificationId: _verificationCode, smsCode: _smsCode));
+
+    _verification(
+      PhoneAuthProvider.getCredential(
+          verificationId: _verificationCode, smsCode: _smsCode),
+    ).then((succeeded) {
+      print('excuuuuu   ');
+      if (succeeded)
+        goToMap();
+      else
+        errorDialog(_errorMsg);
+    });
+
     _isLoading = false;
     notifyListeners();
   }
