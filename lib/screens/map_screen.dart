@@ -4,12 +4,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/map.dart';
-import './bottom_map_screen.dart';
+import './bottom_buttons_map.dart';
+import './upper_buttons_map.dart';
 import '../components/map_pin_pill.dart';
 import '../utils/map.dart';
-
-import '../providers/phone_auth.dart';
-import '../screens/auth_screen.dart';
 
 class MapScreen extends StatelessWidget {
   @override
@@ -43,47 +41,7 @@ class MapScreen extends StatelessWidget {
                   }),
             ),
           ),
-          Positioned(
-            top: 30,
-            left: 15,
-            child: IconButton(
-              onPressed: () {
-                Provider.of<Auth>(context, listen: false).signout();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => LoginPage(),
-                  ),
-                );
-              },
-              color: Colors.transparent,
-              icon: Icon(
-                Icons.person,
-                color: Colors.deepPurple,
-                size: 36.0,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 80,
-            left: 15,
-            child: IconButton(
-              onPressed: () {
-                Provider.of<Auth>(context, listen: false).signout();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => LoginPage(),
-                  ),
-                );
-              },
-              color: Colors.transparent,
-              icon: Icon(
-                Icons.exit_to_app,
-                textDirection: TextDirection.ltr,
-                color: Colors.deepPurple,
-                size: 36.0,
-              ),
-            ),
-          ),
+          UpperButtons(),
           MapPinPillComponent(),
           BottomButtons(),
         ],
