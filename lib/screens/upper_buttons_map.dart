@@ -15,7 +15,7 @@ class UpperButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 45,
+      top: 40,
       left: 15,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -45,7 +45,7 @@ class UpperButtons extends StatelessWidget {
               color: Colors.deepPurple,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           IconButton(
             padding: const EdgeInsets.all(0),
             alignment: Alignment.center,
