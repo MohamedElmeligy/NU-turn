@@ -31,30 +31,36 @@ class MapProvider with ChangeNotifier {
 
   Completer<GoogleMapController> myController = Completer();
 
+  // for storing pins to be viewed on map
   Map<String, Marker> _markers = Map<String, Marker>();
+  Set<Marker> get markers => (_markers.values.toSet());
 
-// Google API Key
+  // Google API Key
   String googleAPIKey = 'AIzaSyCkNE0xD2eBlnda-PI6jOjrBRiK85BM0Do';
 
-// for my custom marker pins
+  // for my custom marker pins
   BitmapDescriptor myLocationIcon;
   BitmapDescriptor busLocationIcon;
 
   LatLng myPosition;
   LatLng busPosition;
 
-// the bus's initial location and current location
-// as it moves
+  // the bus's initial location and current location
+  // as it moves
   LocationData myLocationData;
   LocationData busLocationData;
 
-// wrapper around the location API
+  // wrapper around the location API
   Location myLocation;
   Location busLocation;
 
   CameraPosition initialCameraPosition;
 
+  // information card is, initially, hidden
   double _pinPillPosition = -60;
+  double get pinPillPosition => _pinPillPosition;
+
+  // initially, no selected pin; information card empty
   PinInformation currentlySelectedPin = PinInformation(
       pinPath: '',
       avatarPath: '',
@@ -64,11 +70,12 @@ class MapProvider with ChangeNotifier {
   PinInformation myPinInfo;
   PinInformation busPinInfo;
 
-// Defualt construction;
+  // Defualt construction;
   MapProvider() {
     if (student) {
       myLocation = Location();
 
+      // subscribe to changes in the bus's location on Firestore
       coRef.document('driver').snapshots().listen((data) {
         print(data.data['position'].latitude);
         GeoPoint geo = data.data['position'];
@@ -105,13 +112,11 @@ class MapProvider with ChangeNotifier {
     setMyAndBusIcons();
   }
 
-  Set<Marker> get markers => (_markers.values.toSet());
-  double get pinPillPosition => _pinPillPosition;
-
   void setMyLocation(bool remove) async {
     addingMyRequest = true;
     notifyListeners();
 
+    // check for location permission
     bool permission = await myLocation.hasPermission().then((hasPermission) {
       if (hasPermission) return true;
       return myLocation.requestPermission();
@@ -123,6 +128,7 @@ class MapProvider with ChangeNotifier {
       return;
     }
 
+    // check for location service
     bool service = await myLocation.serviceEnabled().then((serviceEnabled) {
       if (serviceEnabled) return true;
       return myLocation.requestService();
@@ -134,6 +140,7 @@ class MapProvider with ChangeNotifier {
       return;
     }
 
+    //////  checks passed! safe to proceed
     myLocationData = await myLocation.getLocation();
     myPosition = LatLng(myLocationData.latitude, myLocationData.longitude);
 
@@ -264,18 +271,33 @@ class MapProvider with ChangeNotifier {
     myPinInfo.location = myPosition;
     busPinInfo.location = busPosition;
 
-    _markers.update(
-      bus ? 'busPin' : 'myPin',
-      (marker) => Marker(
-        markerId: MarkerId(bus ? 'busPin' : 'myPin'),
-        onTap: () {
-          currentlySelectedPin = bus ? busPinInfo : myPinInfo;
-          setPinPillPosition(60);
-        },
-        position: bus ? busPosition : myPosition, // updated position
-        icon: bus ? busLocationIcon : myLocationIcon,
-      ),
-    );
+    if (bus) {
+      _markers.update(
+        'busPin',
+        (marker) => Marker(
+          markerId: MarkerId('busPin'),
+          onTap: () {
+            currentlySelectedPin = busPinInfo;
+            setPinPillPosition(60);
+          },
+          position: busPosition, // updated position
+          icon: busLocationIcon,
+        ),
+      );
+    } else {
+      _markers.update(
+        'myPin',
+        (marker) => Marker(
+          markerId: MarkerId('myPin'),
+          onTap: () {
+            currentlySelectedPin = myPinInfo;
+            setPinPillPosition(60);
+          },
+          position: myPosition, // updated position
+          icon: myLocationIcon,
+        ),
+      );
+    }
 
     notifyListeners();
   }

@@ -63,6 +63,27 @@ class MapScreen extends StatelessWidget {
               ),
             ),
           ),
+          Positioned(
+            top: 80,
+            left: 15,
+            child: IconButton(
+              onPressed: () {
+                Provider.of<Auth>(context, listen: false).signout();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => LoginPage(),
+                  ),
+                );
+              },
+              color: Colors.transparent,
+              icon: Icon(
+                Icons.exit_to_app,
+                textDirection: TextDirection.ltr,
+                color: Colors.deepPurple,
+                size: 36.0,
+              ),
+            ),
+          ),
           MapPinPillComponent(),
           BottomButtons(),
         ],
