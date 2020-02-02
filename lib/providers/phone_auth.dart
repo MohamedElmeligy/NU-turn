@@ -11,7 +11,7 @@ class Auth with ChangeNotifier {
   }
   final GlobalKey _formKey = GlobalKey();
 
-  static User _user;
+  User user;
 
   bool _showDialog = false;
   bool _hasError = false;
@@ -43,7 +43,7 @@ class Auth with ChangeNotifier {
     String _phone = _prefs.getString('phone');
     String _name = _prefs.getString('name');
     String _id = _prefs.getString('id');
-    _user = new User(phone: _phone, name: _name, id: _id);
+    user = new User(phone: _phone, name: _name, id: _id);
 
     // notifyListeners();
   }
@@ -85,7 +85,7 @@ class Auth with ChangeNotifier {
     };
 
     await firebaseAuth.verifyPhoneNumber(
-      phoneNumber: _user.phone,
+      phoneNumber: user.phone,
       timeout: const Duration(milliseconds: 0),
       codeSent: _codeIsSent,
       codeAutoRetrievalTimeout: _codeAutoRetrievalTimeout,
@@ -133,8 +133,9 @@ class Auth with ChangeNotifier {
         _loginSuccess = false;
       },
     ).then(
-      (user) {
-        if (user != null) {
+      (_user) {
+        if (_user != null) {
+          user.uid = _user.user.uid;
           _isLoading = false;
           notifyListeners();
           _loginSuccess = true;
@@ -171,10 +172,10 @@ class Auth with ChangeNotifier {
   }
 
   User getProfile() {
-    _user.name = _prefs.getString('name');
-    _user.phone = _prefs.getString('phone');
-    _user.id = _prefs.getString('id');
-    return _user;
+    user.name = _prefs.getString('name');
+    user.phone = _prefs.getString('phone');
+    user.id = _prefs.getString('id');
+    return user;
   }
 
   TextEditingController getPhoneController() {
@@ -206,12 +207,12 @@ class Auth with ChangeNotifier {
   }
 
   void setProfile(User user) {
-    _user.phone = user.phone;
-    _user.name = user.name;
-    _user.id = user.id;
-    _prefs.setString('phone', _user.phone);
-    _prefs.setString('name', _user.name);
-    _prefs.setString('id', _user.id);
+    user.phone = user.phone;
+    user.name = user.name;
+    user.id = user.id;
+    _prefs.setString('phone', user.phone);
+    _prefs.setString('name', user.name);
+    _prefs.setString('id', user.id);
   }
 
   void signout() {

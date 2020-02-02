@@ -50,29 +50,43 @@ class MapPinPillComponent extends StatelessWidget {
                   margin: EdgeInsets.only(left: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
-                      Text(mapProvider.currentlySelectedPin.locationName,
-                          style: TextStyle(
-                              color:
-                                  mapProvider.currentlySelectedPin.labelColor)),
                       Text(
-                          'Latitude: ${mapProvider.currentlySelectedPin.location.latitude.toString()}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      Text(
-                          'Longitude: ${mapProvider.currentlySelectedPin.location.longitude.toString()}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        mapProvider.currentlySelectedPin.name ?? "",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            mapProvider.currentlySelectedPin.phone ?? "",
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (mapProvider.currentlySelectedPin.id != null)
+                            Text(
+                              mapProvider.currentlySelectedPin.id,
+                              style: TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                        ],
+                      )
                     ],
                   ),
                 ),
               ),
               if (mapProvider.currentlySelectedPin.pinPath != "")
                 Padding(
-                  padding: EdgeInsets.all(15),
-                  child: Image.asset(
-                    mapProvider.currentlySelectedPin.pinPath,
-                    width: 50,
-                    height: 50,
+                  padding: EdgeInsets.symmetric(horizontal: 25),
+                  child: Icon(
+                    Icons.call,
+                    size: 40,
                   ),
                 )
             ],

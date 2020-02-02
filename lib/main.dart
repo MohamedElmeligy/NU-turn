@@ -7,8 +7,6 @@ import 'package:provider/provider.dart';
 import './providers/map.dart';
 import './providers/phone_auth.dart';
 
-import './screens/map_screen.dart';
-import './screens/test.dart';
 import './screens/auth_screen.dart';
 
 void main() {
@@ -36,9 +34,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<MapProvider>(
-          create: (ctx) => MapProvider(),
-        ),
         ChangeNotifierProvider<Auth>(
           create: (ctx) => Auth(),
         ),

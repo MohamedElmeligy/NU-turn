@@ -154,6 +154,9 @@ class LoginPage extends StatelessWidget {
                     onChanged: (value) {
                       _name = value;
                     },
+                    onSaved: (value) {
+                      _name = value;
+                    },
                   ),
                   SizedBox(
                     height: 25,
@@ -168,6 +171,9 @@ class LoginPage extends StatelessWidget {
                     },
                     decoration: InputDecoration(labelText: 'University ID'),
                     onChanged: (value) {
+                      _id = value;
+                    },
+                    onSaved: (value) {
                       _id = value;
                     },
                   ),
