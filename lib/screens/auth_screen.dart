@@ -32,6 +32,15 @@ class LoginPage extends StatelessWidget {
           bool _pinHasError = auth.getPinHasError();
           String _errorMsg = auth.getErrorMsg();
 
+          void goToMap() {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MapScreen(),
+              ),
+            );
+          }
+
           void errorDialog(String msg) {
             showDialog(
               context: ctx,
@@ -59,24 +68,21 @@ class LoginPage extends StatelessWidget {
             );
           }
 
-          Future<bool> submit() async {
+          void submit() async {
             if (!_formState.validate()) {
               // Invalid!
-              return false;
+              return;
             }
+
             _formState.save();
 
             User _user = new User(phone: "+20$_phone", name: _name, id: _id);
 
             auth.setProfile(_user);
             if (!_showPins) {
-              bool x = await auth.automaticSignIn();
-              print(x.toString() + "d111111111111111111111111");
-              return x;
+              auth.automaticSignIn(goToMap, errorDialog);
             } else {
-              bool x = await auth.manualSignIn();
-              print(x.toString() + "2222222222222");
-              return x;
+              auth.manualSignIn(goToMap, errorDialog);
             }
           }
 
@@ -91,21 +97,8 @@ class LoginPage extends StatelessWidget {
                     style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
                   ),
                   InkWell(
-                    onTap: () async {
-                      submit().then((x) {
-                        print(x.toString()+ "ontaaaaaaaaaaaaaaaaaaaaaap");
-                        if (x) {
-                          print("success in screeeeeen");
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MapScreen()));
-                        }
-                        if (!x && _errorMsg != "") {
-                          print("not success");
-                          errorDialog(_errorMsg);
-                        }
-                      });
+                    onTap: () {
+                      submit();
                     },
                     child: CircleAvatar(
                       backgroundColor: Colors.grey.shade800,
@@ -136,6 +129,7 @@ class LoginPage extends StatelessWidget {
                       if (value.length != 11) {
                         return 'Invalid Number';
                       }
+                      return null;
                     },
                     decoration: InputDecoration(labelText: 'Phone'),
                     onChanged: (value) {
@@ -154,6 +148,7 @@ class LoginPage extends StatelessWidget {
                       if (value.length < 5) {
                         return 'Please Enter Full Name';
                       }
+                      return null;
                     },
                     decoration: InputDecoration(labelText: 'Name'),
                     onChanged: (value) {
@@ -169,6 +164,7 @@ class LoginPage extends StatelessWidget {
                       if (value.length != 8) {
                         return 'Invalid ID';
                       }
+                      return null;
                     },
                     decoration: InputDecoration(labelText: 'University ID'),
                     onChanged: (value) {

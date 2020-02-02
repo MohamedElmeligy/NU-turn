@@ -48,7 +48,7 @@ class Auth with ChangeNotifier {
     // notifyListeners();
   }
 
-  Future<bool> automaticSignIn() async {
+  Future<bool> automaticSignIn(Function goToMap, Function errorDialog) async {
     _isLoading = true;
     notifyListeners();
 
@@ -64,8 +64,14 @@ class Auth with ChangeNotifier {
     };
 
     //called when Auto verified
-    _verificationCompleted = (AuthCredential auth) async {
-      _verification(auth);
+    _verificationCompleted = (AuthCredential auth) {
+      _verification(auth).then((succeeded) {
+        print('excuuuuu   ');
+        if (succeeded)
+          goToMap();
+        else
+          errorDialog(_errorMsg);
+      });
     };
 
     _verificationFailed = (AuthException authException) {
@@ -73,6 +79,7 @@ class Auth with ChangeNotifier {
       _isLoading = false;
 
       _errorMsg = "Tried Logging in frequently, please try again later!";
+      errorDialog(_errorMsg);
       notifyListeners();
       _loginSuccess = false;
     };
@@ -89,7 +96,7 @@ class Auth with ChangeNotifier {
     return _isLoggedIn;
   }
 
-  Future<bool> manualSignIn() async {
+  Future<bool> manualSignIn(Function goToMap, Function errorDialog) async {
     _isLoading = true;
     notifyListeners();
     return await _verification(PhoneAuthProvider.getCredential(
@@ -100,7 +107,7 @@ class Auth with ChangeNotifier {
 
   Future<bool> _verification(AuthCredential auth) async {
     _authCredential = auth;
-    firebaseAuth.signInWithCredential(_authCredential).catchError(
+    await firebaseAuth.signInWithCredential(_authCredential).catchError(
       (error) {
         print(error.toString());
         if (error.toString().contains('ERROR_INVALID_VERIFICATION_CODE')) {
@@ -115,10 +122,7 @@ class Auth with ChangeNotifier {
 
         _isLoading = false;
         notifyListeners();
-        print("error");
         _loginSuccess = false;
-
-        // errorDialog(errorMsg);
       },
     ).then(
       (user) {
