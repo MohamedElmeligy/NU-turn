@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:uturn/models/user.dart';
 
+import '../models/driver.dart';
 import '../models/pin_pill_info.dart';
 
 class MapProvider with ChangeNotifier {
@@ -16,9 +17,9 @@ class MapProvider with ChangeNotifier {
   static const LatLng MY_LOCATION = LatLng(30.025994, 31.022815);
   static const LatLng BUS_LOCATION = LatLng(30.0432003, 31.1889163);
 
-  CollectionReference coRef = Firestore().collection('positions');
+  Firestore dbRef = Firestore();
 
-  bool student = true;
+  bool firstFetch = true;
 
   bool _requestedRide = false;
   bool addingMyRequest = false;
@@ -41,19 +42,20 @@ class MapProvider with ChangeNotifier {
 
   // for my custom marker pins
   BitmapDescriptor myLocationIcon;
-  BitmapDescriptor busLocationIcon;
+  BitmapDescriptor driverLocationIcon;
 
-  LatLng myPosition;
-  LatLng busPosition;
+  // in case the user is a student
+  LatLng studentPosition;
+  Map<String, Driver> _drivers = Map<String, Driver>();
 
-  // the bus's initial location and current location
-  // as it moves
-  LocationData myLocationData;
-  LocationData busLocationData;
+  // in case the user is a driver
+  LatLng currentDriverPosition;
+
+  // user's initial location and current location
+  LocationData userLocationData;
 
   // wrapper around the location API
-  Location myLocation;
-  Location busLocation;
+  Location userLocator;
 
   CameraPosition initialCameraPosition;
 
@@ -81,81 +83,218 @@ class MapProvider with ChangeNotifier {
     labelColor: Colors.purpleAccent,
   );
 
+  // current user's profile
   User user;
 
-  // Defualt construction;
+  //////////                     Defualt construction                     //////////
+  ///
   MapProvider({this.user}) {
     // set custom marker pins
     setMyAndBusIcons();
 
-    print('heyyyy');
+    userLocator = Location();
 
-    if (student) {
-      myLocation = Location();
+    dbRef
+        .collection('licencedDrivers')
+        .document(user.phone)
+        .get()
+        .then((__user) {
+      if (!__user.exists) {
+        // set student pin info 'myPinInfo'
+        myPinInfo = PinInformation(
+          name: user.name,
+          phone: user.phone,
+          id: user.id,
+          pinPath: "assets/destination_map_marker.png",
+          avatarPath: "assets/friend1.jpg",
+          labelColor: Colors.blueAccent,
+        );
 
-      // subscribe to changes in the bus's location on Firestore
-      coRef.document('driver').snapshots().listen((driver) {
-        print(driver.data['position'].latitude);
-        GeoPoint geo = driver.data['position'];
-        busPosition = LatLng(geo.latitude, geo.longitude);
-        busPinInfo.name = driver.data['name'];
-        busPinInfo.phone = driver.data['phone'];
-
-        updatePinsOnMap(true);
-      });
-
-      coRef.document('${user.uid}').get().then((user) {
-        if (user.exists) {
-          setMyLocation(
-            remove: false,
-            user: User(
-              name: user.data['name'],
-              phone: user.data['phone'],
-              id: user.data['id'],
-            ),
-          );
-        }
-      });
-    } else {
-      busLocation = Location();
-      // subscribe to changes in the bus's location
-      // by "listening" to the location's onLocationChanged event
-      busLocation.onLocationChanged().listen((LocationData cLoc) {
-        // cLoc contains the lat and long of the
-        // current bus's position in real time,
-        // so we're holding on to it
-        busLocationData = cLoc;
-        busPosition =
-            LatLng(busLocationData.latitude, busLocationData.longitude);
-        coRef.document('driver').updateData({
-          "position": GeoPoint(busPosition.latitude, busPosition.longitude),
+        //  check whether or not this student has a request; if a request is filed, fetch it
+        dbRef
+            .collection('students')
+            .document('${user.uid}')
+            .get()
+            .then((request) {
+          if (request.exists) {
+            setMyLocation(
+              remove: false,
+            );
+          }
         });
 
-        updatePinsOnMap(true);
-      });
-    }
+        // subscribe to changes to 'drivers' location on Firestore
+        dbRef.collection('drivers').snapshots().listen(
+          (drivers) {
+            _drivers.clear();
+            _markers.removeWhere((key, value) => key != user.uid);
 
+            if (drivers.documents.isNotEmpty) {
+              currentDriverPosition = LatLng(
+                  drivers.documents[0].data['position'].latitude,
+                  drivers.documents[0].data['position'].longitude);
+
+              drivers.documents.forEach(
+                (driver) {
+                  Driver updatedDriver = Driver(
+                    name: driver.data['name'],
+                    phone: driver.data['phone'],
+                    position: driver.data['position'],
+                    id: '',
+                  );
+
+                  _drivers.update(
+                    driver.documentID,
+                    (oldDriver) => updatedDriver,
+                    ifAbsent: () => updatedDriver,
+                  );
+
+                  Marker updatedDriverMarker = Marker(
+                    markerId: MarkerId(driver.documentID),
+                    onTap: () {
+                      currentlySelectedPin = PinInformation(
+                        name: driver.data['name'],
+                        phone: driver.data['phone'],
+                        labelColor: Colors.blueAccent,
+                        id: '',
+                        pinPath: 'assets/driving_pin.png',
+                        avatarPath: 'assets/friend2.jpg',
+                      );
+                      setPinPillPosition(60);
+                    },
+                    position: LatLng(
+                      driver.data['position'].latitude,
+                      driver.data['position'].longitude,
+                    ), // updated position
+                    icon: driverLocationIcon,
+                  );
+
+                  _markers.update(
+                    driver.documentID,
+                    (oldMarker) => updatedDriverMarker,
+                    ifAbsent: () => updatedDriverMarker,
+                  );
+                },
+              );
+            }
+
+            if (firstFetch) {
+              updatePinsOnMap(currentDriverPosition);
+              firstFetch = false;
+            } else
+              notifyListeners();
+          },
+        );
+      } else {
+        ////////////                                for licenced drivers accounts
+        // subscribe to changes in the bus's location
+        // by "listening" to the location's onLocationChanged event
+        userLocator.onLocationChanged().listen((LocationData cLoc) {
+          // cLoc contains the lat and long of the
+          // current bus's position in real time,
+          // so we're holding on to it
+          userLocationData = cLoc;
+          currentDriverPosition =
+              LatLng(userLocationData.latitude, userLocationData.longitude);
+
+          if (firstFetch) {
+            updatePinsOnMap(currentDriverPosition);
+            firstFetch = false;
+          }
+
+          dbRef.collection('drivers').document(user.uid).setData({
+            "name": user.name,
+            "phone": user.phone,
+            "position": GeoPoint(
+              currentDriverPosition.latitude,
+              currentDriverPosition.longitude,
+            ),
+          });
+
+          Marker updatedDriverMarker = Marker(
+            markerId: MarkerId(user.uid),
+            onTap: () {
+              currentlySelectedPin = PinInformation(
+                name: user.name,
+                phone: user.phone,
+                labelColor: Colors.blueAccent,
+                id: '',
+                pinPath: 'assets/driving_pin.png',
+                avatarPath: 'assets/friend2.jpg',
+              );
+              setPinPillPosition(60);
+            },
+            position: LatLng(
+              currentDriverPosition.latitude,
+              currentDriverPosition.longitude,
+            ), // updated position
+            icon: driverLocationIcon,
+          );
+
+          _markers.update(
+            user.uid,
+            (oldMarker) => updatedDriverMarker,
+            ifAbsent: () => updatedDriverMarker,
+          );
+
+          notifyListeners();
+        });
+
+        dbRef.collection('students').snapshots().listen((students) {
+          _markers.removeWhere((key, value) => key != user.uid);
+
+          students.documents.forEach((student) {
+            Marker studentMarker = Marker(
+              markerId: MarkerId(student.documentID),
+              onTap: () {
+                currentlySelectedPin = PinInformation(
+                  name: student.data['name'],
+                  phone: student.data['phone'],
+                  labelColor: Colors.deepPurple,
+                  id: '',
+                  pinPath: 'assets/destination_map_marker.png',
+                  avatarPath: 'assets/friend1.jpg',
+                );
+                setPinPillPosition(60);
+              },
+              position: LatLng(
+                student.data['position'].latitude,
+                student.data['position'].longitude,
+              ), // updated position
+              icon: driverLocationIcon,
+            );
+
+            _markers.update(
+              student.documentID,
+              (oldMarker) => studentMarker,
+              ifAbsent: () => studentMarker,
+            );
+          });
+
+          notifyListeners();
+        });
+      }
+    });
+
+    // animate map camera to first driver in list
     initialCameraPosition = CameraPosition(
       zoom: CAMERA_ZOOM,
       tilt: CAMERA_TILT,
       bearing: CAMERA_BEARING,
-      target: busPosition ?? BUS_LOCATION,
+      target: currentDriverPosition ?? BUS_LOCATION,
     );
-
-    // updatePinsOnMap(true);
   }
 
   void setMyLocation({
     @required bool remove,
-    @required User user,
   }) async {
     addingMyRequest = true;
     notifyListeners();
 
     // check for location permission
-    bool permission = await myLocation.hasPermission().then((hasPermission) {
+    bool permission = await userLocator.hasPermission().then((hasPermission) {
       if (hasPermission) return true;
-      return myLocation.requestPermission();
+      return userLocator.requestPermission();
     });
 
     if (!permission) {
@@ -165,9 +304,9 @@ class MapProvider with ChangeNotifier {
     }
 
     // check for location service
-    bool service = await myLocation.serviceEnabled().then((serviceEnabled) {
+    bool service = await userLocator.serviceEnabled().then((serviceEnabled) {
       if (serviceEnabled) return true;
-      return myLocation.requestService();
+      return userLocator.requestService();
     });
 
     if (!service) {
@@ -177,57 +316,46 @@ class MapProvider with ChangeNotifier {
     }
 
     //////  checks passed! safe to proceed
-    myLocationData = await myLocation.getLocation();
-    myPosition = LatLng(myLocationData.latitude, myLocationData.longitude);
 
     if (remove) {
-      _markers.remove('myPin');
+      _markers.remove(user.uid);
       _requestedRide = false;
 
-      coRef.document('${user.uid}').delete();
+      dbRef.collection('students').document('${user.uid}').delete();
 
-      updatePinsOnMap(true);
+      updatePinsOnMap(currentDriverPosition);
     } else {
       _requestedRide = true;
 
-      myPinInfo = PinInformation(
-        name: user.name,
-        phone: user.phone,
-        id: user.id,
-        pinPath: "assets/destination_map_marker.png",
-        avatarPath: "assets/friend1.jpg",
-        labelColor: Colors.blueAccent,
+      userLocationData = await userLocator.getLocation();
+      studentPosition =
+          LatLng(userLocationData.latitude, userLocationData.longitude);
+
+      Marker myMarker = Marker(
+        markerId: MarkerId(user.uid),
+        position: studentPosition,
+        onTap: () {
+          currentlySelectedPin = myPinInfo;
+          setPinPillPosition(60);
+        },
+        icon: myLocationIcon,
       );
 
       _markers.update(
-        'myPin',
-        (marker) => Marker(
-          markerId: MarkerId('myPin'),
-          position: myPosition,
-          onTap: () {
-            currentlySelectedPin = myPinInfo;
-            setPinPillPosition(60);
-          },
-          icon: myLocationIcon,
-        ),
-        ifAbsent: () => Marker(
-          markerId: MarkerId('myPin'),
-          position: myPosition,
-          onTap: () {
-            currentlySelectedPin = myPinInfo;
-            setPinPillPosition(60);
-          },
-          icon: myLocationIcon,
-        ),
+        user.uid,
+        (marker) => myMarker,
+        ifAbsent: () => myMarker,
       );
 
-      coRef.document('${user.uid}').setData({
+      dbRef.collection('students').document('${user.uid}').setData({
         "name": user.name,
         "phone": user.phone,
         "id": user.id,
+        "position":
+            GeoPoint(studentPosition.latitude, studentPosition.longitude),
       });
 
-      updatePinsOnMap(false);
+      updatePinsOnMap(studentPosition);
     }
 
     addingMyRequest = false;
@@ -245,29 +373,13 @@ class MapProvider with ChangeNotifier {
       'assets/destination_map_marker.png',
     );
 
-    busLocationIcon = await BitmapDescriptor.fromAssetImage(
+    driverLocationIcon = await BitmapDescriptor.fromAssetImage(
       ImageConfiguration(devicePixelRatio: 2.5),
       'assets/driving_pin.png',
     );
   }
 
-  void showBusPinOnMap() {
-    // bus pin
-    _markers.putIfAbsent(
-      'busPin',
-      () => Marker(
-        markerId: MarkerId('busPin'),
-        position: busPosition,
-        onTap: () {
-          currentlySelectedPin = busPinInfo;
-          setPinPillPosition(60);
-        },
-        icon: busLocationIcon,
-      ),
-    );
-  }
-
-  void updatePinsOnMap(bool bus) async {
+  void updatePinsOnMap(LatLng newPosition) async {
     // create a new CameraPosition instance
     // every time the location changes, so the camera
     // follows the pin as it moves with an animation
@@ -275,41 +387,13 @@ class MapProvider with ChangeNotifier {
       zoom: CAMERA_ZOOM,
       tilt: CAMERA_TILT,
       bearing: CAMERA_BEARING,
-      target: bus ? busPosition : myPosition,
+      target: newPosition,
     );
 
     final GoogleMapController controller = await myController.future;
 
     controller.animateCamera(CameraUpdate.newCameraPosition(cPosition));
     // updated position
-
-    if (bus) {
-      _markers.update(
-        'busPin',
-        (marker) => Marker(
-          markerId: MarkerId('busPin'),
-          onTap: () {
-            currentlySelectedPin = busPinInfo;
-            setPinPillPosition(60);
-          },
-          position: busPosition, // updated position
-          icon: busLocationIcon,
-        ),
-      );
-    } else {
-      _markers.update(
-        'myPin',
-        (marker) => Marker(
-          markerId: MarkerId('myPin'),
-          onTap: () {
-            currentlySelectedPin = myPinInfo;
-            setPinPillPosition(60);
-          },
-          position: myPosition, // updated position
-          icon: myLocationIcon,
-        ),
-      );
-    }
 
     notifyListeners();
   }

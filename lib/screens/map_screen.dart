@@ -43,7 +43,7 @@ class MapScreen extends StatelessWidget {
                         mapProvider.myController.complete(controller);
                         // my map has completed being created;
                         // i'm ready to show the pins on the map
-                        mapProvider.showBusPinOnMap();
+                        // mapProvider.showBusPinOnMap();
                       }),
                 ),
               ),

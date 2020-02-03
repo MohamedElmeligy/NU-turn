@@ -40,8 +40,7 @@ class BottomButtons extends StatelessWidget {
                                 height: 60,
                                 child: RaisedButton(
                                   onPressed: () {
-                                    mapProvider.setMyLocation(
-                                        remove: true, user: user);
+                                    mapProvider.setMyLocation(remove: true);
                                   },
                                   color: Colors.deepPurple,
                                   shape: RoundedRectangleBorder(
@@ -64,8 +63,7 @@ class BottomButtons extends StatelessWidget {
                                 height: 60,
                                 child: RaisedButton(
                                   onPressed: () {
-                                    mapProvider.setMyLocation(
-                                        remove: true, user: user);
+                                    mapProvider.setMyLocation(remove: true);
                                   },
                                   color: Colors.white,
                                   shape: RoundedRectangleBorder(
@@ -106,7 +104,7 @@ class BottomButtons extends StatelessWidget {
                       bottom: 0,
                       child: RaisedButton(
                         onPressed: () {
-                          mapProvider.setMyLocation(remove: false, user: user);
+                          mapProvider.setMyLocation(remove: false);
                         },
                         color: Colors.deepPurple,
                         shape: RoundedRectangleBorder(
