@@ -170,9 +170,6 @@ class LoginPage extends StatelessWidget {
                       return null;
                     },
                     decoration: InputDecoration(labelText: 'University ID'),
-                    onChanged: (value) {
-                      _id = value;
-                    },
                     onSaved: (value) {
                       _id = value;
                     },
