@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:provider/provider.dart';
-import 'package:uturn/screens/map_screen.dart';
 
 import './providers/phone_auth.dart';
 
@@ -39,26 +38,8 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        theme: ThemeData(
-            scaffoldBackgroundColor: Colors.deepPurple,
-            secondaryHeaderColor: Colors.white,
-            textTheme: TextTheme(
-              title: TextStyle(color: Colors.white, fontSize: 28),
-              subtitle: TextStyle(color: Colors.white, fontSize: 22),
-              caption: TextStyle(color: Colors.white, fontSize: 18),
-            )),
         debugShowCheckedModeBanner: false,
-        // home: LoginPage(),
-        home: Consumer<Auth>(
-          builder: (ctx, auth, ch) {
-            return FutureBuilder(
-                future: auth.isAuth(),
-                builder: (ctx, auth) =>
-                    auth.connectionState == ConnectionState.waiting
-                        ? CircularProgressIndicator()
-                        : auth.data == true ? MapScreen() : LoginPage());
-          },
-        ),
+        home: LoginPage(),
       ),
     );
   }
