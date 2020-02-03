@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-import './profile_screen.dart';
 import './auth_screen.dart';
 import '../providers/phone_auth.dart';
 
@@ -25,9 +24,10 @@ class UpperButtons extends StatelessWidget {
             padding: const EdgeInsets.all(0),
             alignment: Alignment.center,
             onPressed: () {
+              Provider.of<Auth>(context, listen: false).signout();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => Profile(),
+                  builder: (context) => LoginPage(),
                 ),
               );
             },

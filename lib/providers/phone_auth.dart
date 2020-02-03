@@ -108,6 +108,9 @@ class Auth with ChangeNotifier {
       else
         errorDialog(_errorMsg);
     });
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<bool> _verification(AuthCredential auth) async {
@@ -144,14 +147,6 @@ class Auth with ChangeNotifier {
     return _loginSuccess;
   }
 
-  Future<bool> isAuth() async {
-    _prefs = await SharedPreferences.getInstance();
-    if (_prefs.getString('phone') == null) {
-      return false;
-    } else
-      return true;
-  }
-
   bool getShowpins() {
     return _showPins;
   }
@@ -180,7 +175,6 @@ class Auth with ChangeNotifier {
     user.name = _prefs.getString('name');
     user.phone = _prefs.getString('phone');
     user.id = _prefs.getString('id');
-    user.uid = _prefs.getString('uid');
     return user;
   }
 
@@ -213,21 +207,16 @@ class Auth with ChangeNotifier {
   }
 
   void setProfile(User newUser) {
-    print("setting profile");
+    print(newUser.phone);
     user.phone = newUser.phone;
     user.name = newUser.name;
     user.id = newUser.id;
     _prefs.setString('phone', user.phone);
     _prefs.setString('name', user.name);
     _prefs.setString('id', user.id);
-    print(user.phone);
-    print(user.name);
-    print(user.id);
-    print("done");
   }
 
-  void signout() async {
-    print(user.phone);
-    await _prefs.remove('phone');
+  void signout() {
+    _prefs.clear();
   }
 }
