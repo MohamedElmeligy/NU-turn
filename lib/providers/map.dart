@@ -187,91 +187,94 @@ class MapProvider with ChangeNotifier {
         );
       } else {
         ////////////                                for licenced drivers accounts
-        // subscribe to changes in the bus's location
-        // by "listening" to the location's onLocationChanged event
-        userLocator.onLocationChanged().listen((LocationData cLoc) {
-          // cLoc contains the lat and long of the
-          // current bus's position in real time,
-          // so we're holding on to it
-          userLocationData = cLoc;
-          currentDriverPosition =
-              LatLng(userLocationData.latitude, userLocationData.longitude);
+        ///
+        checkLocationPermissionAndService().then((value) {
+          // subscribe to changes in the bus's location
+          // by "listening" to the location's onLocationChanged event
+          userLocator.onLocationChanged().listen((LocationData cLoc) {
+            // cLoc contains the lat and long of the
+            // current bus's position in real time,
+            // so we're holding on to it
+            userLocationData = cLoc;
+            currentDriverPosition =
+                LatLng(userLocationData.latitude, userLocationData.longitude);
 
-          if (firstFetch) {
-            updatePinsOnMap(currentDriverPosition);
-            firstFetch = false;
-          }
+            if (firstFetch) {
+              updatePinsOnMap(currentDriverPosition);
+              firstFetch = false;
+            }
 
-          dbRef.collection('drivers').document(user.uid).setData({
-            "name": user.name,
-            "phone": user.phone,
-            "position": GeoPoint(
-              currentDriverPosition.latitude,
-              currentDriverPosition.longitude,
-            ),
-          });
+            dbRef.collection('drivers').document(user.uid).setData({
+              "name": user.name,
+              "phone": user.phone,
+              "position": GeoPoint(
+                currentDriverPosition.latitude,
+                currentDriverPosition.longitude,
+              ),
+            });
 
-          Marker updatedDriverMarker = Marker(
-            markerId: MarkerId(user.uid),
-            onTap: () {
-              currentlySelectedPin = PinInformation(
-                name: user.name,
-                phone: user.phone,
-                labelColor: Colors.blueAccent,
-                id: '',
-                pinPath: 'assets/driving_pin.png',
-                avatarPath: 'assets/friend2.jpg',
-              );
-              setPinPillPosition(60);
-            },
-            position: LatLng(
-              currentDriverPosition.latitude,
-              currentDriverPosition.longitude,
-            ), // updated position
-            icon: driverLocationIcon,
-          );
-
-          _markers.update(
-            user.uid,
-            (oldMarker) => updatedDriverMarker,
-            ifAbsent: () => updatedDriverMarker,
-          );
-
-          notifyListeners();
-        });
-
-        dbRef.collection('students').snapshots().listen((students) {
-          _markers.removeWhere((key, value) => key != user.uid);
-
-          students.documents.forEach((student) {
-            Marker studentMarker = Marker(
-              markerId: MarkerId(student.documentID),
+            Marker updatedDriverMarker = Marker(
+              markerId: MarkerId(user.uid),
               onTap: () {
                 currentlySelectedPin = PinInformation(
-                  name: student.data['name'],
-                  phone: student.data['phone'],
-                  labelColor: Colors.deepPurple,
+                  name: user.name,
+                  phone: user.phone,
+                  labelColor: Colors.blueAccent,
                   id: '',
-                  pinPath: 'assets/destination_map_marker.png',
-                  avatarPath: 'assets/friend1.jpg',
+                  pinPath: 'assets/driving_pin.png',
+                  avatarPath: 'assets/friend2.jpg',
                 );
                 setPinPillPosition(60);
               },
               position: LatLng(
-                student.data['position'].latitude,
-                student.data['position'].longitude,
+                currentDriverPosition.latitude,
+                currentDriverPosition.longitude,
               ), // updated position
               icon: driverLocationIcon,
             );
 
             _markers.update(
-              student.documentID,
-              (oldMarker) => studentMarker,
-              ifAbsent: () => studentMarker,
+              user.uid,
+              (oldMarker) => updatedDriverMarker,
+              ifAbsent: () => updatedDriverMarker,
             );
+
+            notifyListeners();
           });
 
-          notifyListeners();
+          dbRef.collection('students').snapshots().listen((students) {
+            _markers.removeWhere((key, value) => key != user.uid);
+
+            students.documents.forEach((student) {
+              Marker studentMarker = Marker(
+                markerId: MarkerId(student.documentID),
+                onTap: () {
+                  currentlySelectedPin = PinInformation(
+                    name: student.data['name'],
+                    phone: student.data['phone'],
+                    labelColor: Colors.deepPurple,
+                    id: '',
+                    pinPath: 'assets/destination_map_marker.png',
+                    avatarPath: 'assets/friend1.jpg',
+                  );
+                  setPinPillPosition(60);
+                },
+                position: LatLng(
+                  student.data['position'].latitude,
+                  student.data['position'].longitude,
+                ), // updated position
+                icon: driverLocationIcon,
+              );
+
+              _markers.update(
+                student.documentID,
+                (oldMarker) => studentMarker,
+                ifAbsent: () => studentMarker,
+              );
+            });
+
+            notifyListeners();
+          });
         });
       }
     });
@@ -285,13 +288,7 @@ class MapProvider with ChangeNotifier {
     );
   }
 
-  void setMyLocation({
-    @required bool remove,
-  }) async {
-    addingMyRequest = true;
-    notifyListeners();
-
-    // check for location permission
+  Future<void> checkLocationPermissionAndService() async {
     bool permission = await userLocator.hasPermission().then((hasPermission) {
       if (hasPermission) return true;
       return userLocator.requestPermission();
@@ -314,6 +311,16 @@ class MapProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
+  }
+
+  void setMyLocation({
+    @required bool remove,
+  }) async {
+    addingMyRequest = true;
+    notifyListeners();
+
+    // check for location permission
+    await checkLocationPermissionAndService();
 
     //////  checks passed! safe to proceed
 
