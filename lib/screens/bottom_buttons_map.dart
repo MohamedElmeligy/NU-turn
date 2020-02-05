@@ -48,7 +48,7 @@ class BottomButtons extends StatelessWidget {
                                         BorderRadius.all(Radius.circular(0)),
                                   ),
                                   child: Text(
-                                    "RIDE",
+                                    "PICKED UP",
                                     style: TextStyle(
                                       fontSize: 24,
                                       color: Colors.white,

@@ -32,32 +32,6 @@ class UpperButtons extends StatelessWidget {
               );
             },
             color: Colors.transparent,
-            icon: Icon(
-              Icons.person,
-              color: Colors.deepPurple,
-              size: 36.0,
-            ),
-          ),
-          Text(
-            'Profile',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.deepPurple,
-            ),
-          ),
-          const SizedBox(height: 12),
-          IconButton(
-            padding: const EdgeInsets.all(0),
-            alignment: Alignment.center,
-            onPressed: () {
-              Provider.of<Auth>(context, listen: false).signout();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => LoginPage(),
-                ),
-              );
-            },
-            color: Colors.transparent,
             icon: Transform.rotate(
               angle: pi,
               child: Icon(
