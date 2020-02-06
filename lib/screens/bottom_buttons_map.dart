@@ -24,77 +24,11 @@ class BottomButtons extends StatelessWidget {
       child: Selector<Auth, User>(
         selector: (ctx, auth) => auth.user,
         builder: (ctx, user, ch) => Consumer<MapProvider>(
-          builder: (ctx, mapProvider, ch) => mapProvider.requestedRide
+          builder: (ctx, mapProvider, ch) => Provider.of<Auth>(context,
+                          listen: false)
+                      .getIdentity() ==
+                  "driver"
               ? Stack(
-                  alignment: Alignment.center,
-                  children: <Widget>[
-                    Positioned(
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Container(
-                                height: 60,
-                                child: RaisedButton(
-                                  onPressed: () {
-                                    mapProvider.setMyLocation(remove: true);
-                                  },
-                                  color: Colors.deepPurple,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(0)),
-                                  ),
-                                  child: Text(
-                                    "PICKED UP",
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                height: 60,
-                                child: RaisedButton(
-                                  onPressed: () {
-                                    mapProvider.setMyLocation(remove: true);
-                                  },
-                                  color: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(0)),
-                                  ),
-                                  child: Text(
-                                    "CANCEL",
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: Colors.deepPurple,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )),
-                    if (mapProvider.addingMyRequest)
-                      Container(
-                        color: Color(0x55DDDDDD),
-                      ),
-                    if (mapProvider.addingMyRequest)
-                      CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                      ),
-                  ],
-                )
-              : Stack(
                   alignment: Alignment.center,
                   children: <Widget>[
                     Positioned(
@@ -102,35 +36,130 @@ class BottomButtons extends StatelessWidget {
                       right: 0,
                       top: 0,
                       bottom: 0,
-                      child: RaisedButton(
-                        onPressed: () {
-                          mapProvider.setMyLocation(remove: false);
-                        },
+                      child: Container(
                         color: Colors.deepPurple,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(0)),
-                        ),
-                        child: Text(
-                          "NEED A RIDE",
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
+                        child: Center(
+                          child: Text(
+                            "Hello ${user.name.split(" ")[0]}!",
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    if (mapProvider.addingMyRequest)
-                      Container(
-                        color: Color(0x55DDDDDD),
-                      ),
-                    if (mapProvider.addingMyRequest)
-                      CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                      ),
                   ],
-                ),
+                )
+              : mapProvider.requestedRide
+                  ? Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        Positioned(
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Container(
+                                    height: 60,
+                                    child: RaisedButton(
+                                      onPressed: () {
+                                        mapProvider.setMyLocation(remove: true);
+                                      },
+                                      color: Colors.deepPurple,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(0)),
+                                      ),
+                                      child: Text(
+                                        "PICKED UP",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    height: 60,
+                                    child: RaisedButton(
+                                      onPressed: () {
+                                        mapProvider.setMyLocation(remove: true);
+                                      },
+                                      color: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(0)),
+                                      ),
+                                      child: Text(
+                                        "CANCEL",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          color: Colors.deepPurple,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )),
+                        if (mapProvider.addingMyRequest)
+                          Container(
+                            color: Color(0x55DDDDDD),
+                          ),
+                        if (mapProvider.addingMyRequest)
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.deepPurple),
+                          ),
+                      ],
+                    )
+                  : Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: RaisedButton(
+                            onPressed: () {
+                              mapProvider.setMyLocation(remove: false);
+                            },
+                            color: Colors.deepPurple,
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(0)),
+                            ),
+                            child: Text(
+                              "NEED A RIDE",
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (mapProvider.addingMyRequest)
+                          Container(
+                            color: Color(0x55DDDDDD),
+                          ),
+                        if (mapProvider.addingMyRequest)
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.deepPurple),
+                          ),
+                      ],
+                    ),
         ),
       ),
     );

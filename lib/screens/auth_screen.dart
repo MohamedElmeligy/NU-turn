@@ -7,10 +7,10 @@ import './map_screen.dart';
 import '../providers/phone_auth.dart';
 
 class LoginPage extends StatelessWidget {
+  static const routeName = '/auth';
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -33,15 +33,18 @@ class LoginPage extends StatelessWidget {
           String _errorMsg = auth.getErrorMsg();
 
           void goToMap() {
+            auth.setIsLoading(false);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => MapScreen(),
               ),
             );
+            // auth.setIsLoading(false);
           }
 
           void errorDialog(String msg) {
+            auth.setIsLoading(false);
             showDialog(
               context: ctx,
               builder: (ctx) => Directionality(
@@ -66,6 +69,7 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
             );
+            // auth.setIsLoading(false);
           }
 
           void submit() async {
@@ -124,6 +128,7 @@ class LoginPage extends StatelessWidget {
                     height: 15,
                   ),
                   TextFormField(
+                    keyboardType: TextInputType.phone,
                     controller: _phoneController,
                     validator: (value) {
                       if (value.length != 11) {
@@ -162,6 +167,7 @@ class LoginPage extends StatelessWidget {
                     height: 25,
                   ),
                   TextFormField(
+                    keyboardType: TextInputType.phone,
                     controller: _idController,
                     validator: (value) {
                       if (value.length != 8) {

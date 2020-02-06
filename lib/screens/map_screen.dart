@@ -12,6 +12,7 @@ import '../providers/phone_auth.dart';
 import '../models/user.dart';
 
 class MapScreen extends StatelessWidget {
+  static const routeName = '/map';
   @override
   Widget build(BuildContext context) {
     return Selector<Auth, User>(

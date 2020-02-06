@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
@@ -16,7 +17,6 @@ class Auth with ChangeNotifier {
   bool _showDialog = false;
   bool _hasError = false;
   bool _isLoading = false;
-  bool _isLoggedIn = false;
   bool _loginSuccess = false;
   bool _showPins = false;
 
@@ -37,13 +37,19 @@ class Auth with ChangeNotifier {
   String _verificationCode;
   String _smsCode;
   String _errorMsg = "";
+  String _isDriver = "student";
 
-  Future<void> init() async {
+  Future<bool> init() async {
     _prefs = await SharedPreferences.getInstance();
     String _phone = _prefs.getString('phone');
     String _name = _prefs.getString('name');
     String _id = _prefs.getString('id');
     user = new User(phone: _phone, name: _name, id: _id);
+
+    if (_prefs.containsKey('phone'))
+      return true;
+    else
+      return false;
 
     // notifyListeners();
   }
@@ -136,10 +142,7 @@ class Auth with ChangeNotifier {
       (_user) {
         if (_user != null) {
           user.uid = _user.user.uid;
-          _isLoading = false;
-          notifyListeners();
-          _loginSuccess = true;
-          print("success");
+          _prefs.setString('uid', user.uid);
           _loginSuccess = true;
         }
       },
@@ -163,6 +166,10 @@ class Auth with ChangeNotifier {
     return _isLoading;
   }
 
+  void setIsLoading(bool isLoading) {
+    _isLoading = isLoading;
+  }
+
   GlobalKey getFormKey() {
     return _formKey;
   }
@@ -171,10 +178,16 @@ class Auth with ChangeNotifier {
     return _errorMsg;
   }
 
+  String getIdentity() {
+    return _isDriver;
+    // set student pin info 'myPinInfo'
+  }
+
   User getProfile() {
     user.name = _prefs.getString('name');
     user.phone = _prefs.getString('phone');
     user.id = _prefs.getString('id');
+    user.uid = _prefs.getString('uid');
     return user;
   }
 
@@ -206,7 +219,7 @@ class Auth with ChangeNotifier {
     _showDialog = showDialog;
   }
 
-  void setProfile(User newUser) {
+  void setProfile(User newUser) async {
     print(newUser.phone);
     user.phone = newUser.phone;
     user.name = newUser.name;
@@ -214,6 +227,17 @@ class Auth with ChangeNotifier {
     _prefs.setString('phone', user.phone);
     _prefs.setString('name', user.name);
     _prefs.setString('id', user.id);
+
+    Firestore dbRef = new Firestore();
+    await dbRef
+        .collection('licencedDrivers')
+        .document(user.phone)
+        .get()
+        .then((result) {
+      if (result.exists) {
+        _isDriver = "driver";
+      }
+    });
   }
 
   void signout() {
