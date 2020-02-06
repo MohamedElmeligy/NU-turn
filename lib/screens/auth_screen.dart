@@ -26,11 +26,8 @@ class LoginPage extends StatelessWidget {
           String _name, _phone, _id;
 
           bool _loading = auth.getIsLoading();
-          bool _showDialog = auth.getShowDialog();
-          bool _loggedIn = false;
           bool _showPins = auth.getShowpins();
           bool _pinHasError = auth.getPinHasError();
-          String _errorMsg = auth.getErrorMsg();
 
           void goToMap() {
             auth.setIsLoading(false);
@@ -79,10 +76,11 @@ class LoginPage extends StatelessWidget {
             }
 
             _formState.save();
+            if (!_showPins) {
+              User user = new User(phone: "+2$_phone", name: _name, id: _id);
+              auth.setProfile(user);
+            }
 
-            User _user = new User(phone: "+2$_phone", name: _name, id: _id);
-
-            auth.setProfile(_user);
             if (!_showPins) {
               auth.automaticSignIn(goToMap, errorDialog);
             } else {

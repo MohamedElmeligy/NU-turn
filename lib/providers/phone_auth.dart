@@ -12,9 +12,8 @@ class Auth with ChangeNotifier {
   }
   final GlobalKey _formKey = GlobalKey();
 
-  User user;
+  static User _user;
 
-  bool _showDialog = false;
   bool _hasError = false;
   bool _isLoading = false;
   bool _loginSuccess = false;
@@ -37,14 +36,14 @@ class Auth with ChangeNotifier {
   String _verificationCode;
   String _smsCode;
   String _errorMsg = "";
-  String _isDriver = "student";
 
   Future<bool> init() async {
     _prefs = await SharedPreferences.getInstance();
     String _phone = _prefs.getString('phone');
     String _name = _prefs.getString('name');
     String _id = _prefs.getString('id');
-    user = new User(phone: _phone, name: _name, id: _id);
+    String _identity = _prefs.getString('identity');
+    _user = new User(phone: _phone, name: _name, id: _id, identity: _identity);
 
     if (_prefs.containsKey('phone'))
       return true;
@@ -91,7 +90,7 @@ class Auth with ChangeNotifier {
     };
 
     await firebaseAuth.verifyPhoneNumber(
-      phoneNumber: user.phone,
+      phoneNumber: _user.phone,
       timeout: const Duration(milliseconds: 0),
       codeSent: _codeIsSent,
       codeAutoRetrievalTimeout: _codeAutoRetrievalTimeout,
@@ -139,10 +138,10 @@ class Auth with ChangeNotifier {
         _loginSuccess = false;
       },
     ).then(
-      (_user) {
-        if (_user != null) {
-          user.uid = _user.user.uid;
-          _prefs.setString('uid', user.uid);
+      (result) {
+        if (result != null) {
+          _user.uid = result.user.uid;
+          _prefs.setString('uid', _user.uid);
           _loginSuccess = true;
         }
       },
@@ -166,10 +165,6 @@ class Auth with ChangeNotifier {
     return _isLoading;
   }
 
-  void setIsLoading(bool isLoading) {
-    _isLoading = isLoading;
-  }
-
   GlobalKey getFormKey() {
     return _formKey;
   }
@@ -179,16 +174,13 @@ class Auth with ChangeNotifier {
   }
 
   String getIdentity() {
-    return _isDriver;
+    return _user.identity;
     // set student pin info 'myPinInfo'
   }
 
-  User getProfile() {
-    user.name = _prefs.getString('name');
-    user.phone = _prefs.getString('phone');
-    user.id = _prefs.getString('id');
-    user.uid = _prefs.getString('uid');
-    return user;
+  User getUser() {
+    print(_user);
+    return _user;
   }
 
   TextEditingController getPhoneController() {
@@ -207,35 +199,34 @@ class Auth with ChangeNotifier {
     return _smsCode;
   }
 
+  void setIsLoading(bool isLoading) {
+    _isLoading = isLoading;
+  }
+
   void setSmsCode(String code) {
     _smsCode = code;
   }
 
-  bool getShowDialog() {
-    return _showDialog;
-  }
-
-  void setShowDialog(bool showDialog) {
-    _showDialog = showDialog;
-  }
-
   void setProfile(User newUser) async {
     print(newUser.phone);
-    user.phone = newUser.phone;
-    user.name = newUser.name;
-    user.id = newUser.id;
-    _prefs.setString('phone', user.phone);
-    _prefs.setString('name', user.name);
-    _prefs.setString('id', user.id);
+    _user.phone = newUser.phone;
+    _user.name = newUser.name;
+    _user.id = newUser.id;
+    _prefs.setString('phone', _user.phone);
+    _prefs.setString('name', _user.name);
+    _prefs.setString('id', _user.id);
 
     Firestore dbRef = new Firestore();
     await dbRef
         .collection('licencedDrivers')
-        .document(user.phone)
+        .document(_user.phone)
         .get()
         .then((result) {
       if (result.exists) {
-        _isDriver = "driver";
+        _user.identity = "driver";
+        _prefs.setString('identity', 'driver');
+      } else {
+        _prefs.setString('identity', 'student');
       }
     });
   }

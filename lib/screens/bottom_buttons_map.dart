@@ -22,7 +22,7 @@ class BottomButtons extends StatelessWidget {
       duration: Duration(milliseconds: 1500),
       curve: Curves.easeInOutCubic,
       child: Selector<Auth, User>(
-        selector: (ctx, auth) => auth.user,
+        selector: (ctx, auth) => auth.getUser(),
         builder: (ctx, user, ch) => Consumer<MapProvider>(
           builder: (ctx, mapProvider, ch) => Provider.of<Auth>(context,
                           listen: false)

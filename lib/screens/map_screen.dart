@@ -16,7 +16,7 @@ class MapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<Auth, User>(
-      selector: (ctx, auth) => auth.user,
+      selector: (ctx, auth) => auth.getUser(),
       builder: (ctx, user, ch) => ChangeNotifierProvider<MapProvider>(
         create: (ctx) => MapProvider(user: user),
         child: Scaffold(
