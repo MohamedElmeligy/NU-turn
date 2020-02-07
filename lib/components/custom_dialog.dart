@@ -94,10 +94,7 @@ class CustomDialog extends StatelessWidget {
           Positioned(
             top: 0,
             height: 2.0 * avatarRadius,
-            child: Image.asset(
-              "assets/happy.png",
-              // height: avatarRadius,
-            ),
+            child: image,
           ),
         ],
       ),

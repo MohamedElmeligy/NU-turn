@@ -72,6 +72,9 @@ class BottomButtons extends StatelessWidget {
                                           description: "Wish you a happy day",
                                           positiveButtonText: "Okay",
                                           negativeButtonText: "Back",
+                                          image: Image.asset(
+                                            "assets/happy.png",
+                                          ),
                                         ),
                                       );
                                     },
