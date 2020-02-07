@@ -89,6 +89,8 @@ class MapProvider with ChangeNotifier {
 
   SharedPreferences _prefs;
 
+  StreamSubscription<LocationData> _userLocatorListener;
+
   Future<void> fetchLocalUser() async {
     _prefs = await SharedPreferences.getInstance();
     String _uid = _prefs.getString('uid');
@@ -110,6 +112,7 @@ class MapProvider with ChangeNotifier {
 
   void signout() {
     _prefs.clear();
+    _userLocatorListener.cancel();
   }
 
   //////////                     Defualt construction                     //////////
@@ -214,7 +217,8 @@ class MapProvider with ChangeNotifier {
         checkLocationPermissionAndService().then((value) {
           // subscribe to changes in the bus's location
           // by "listening" to the location's onLocationChanged event
-          userLocator.onLocationChanged().listen((LocationData cLoc) {
+          _userLocatorListener =
+              userLocator.onLocationChanged().listen((LocationData cLoc) {
             // cLoc contains the lat and long of the
             // current bus's position in real time,
             // so we're holding on to it

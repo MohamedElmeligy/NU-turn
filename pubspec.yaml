@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
+
   dio: ^3.0.8
   introduction_screen: ^1.0.7
   custom_splash: ^0.0.2
@@ -55,6 +55,8 @@ flutter:
     - assets/friend1.jpg
     - assets/friend2.jpg
     - assets/Logo.png
+
+    - assets/happy.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
   # For details regarding adding assets from package dependencies, see
