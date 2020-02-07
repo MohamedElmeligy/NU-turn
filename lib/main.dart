@@ -40,19 +40,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(
-          value: Auth(),
-        ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: FutureBuilder(
-          future: isAuth(),
-          builder: (ctx, authResultSnapshot) =>
-              authResultSnapshot.data == true ? MapScreen() : LoginPage(),
-        ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: FutureBuilder(
+        future: isAuth(),
+        builder: (ctx, authResultSnapshot) =>
+            authResultSnapshot.data == true ? MapScreen() : LoginPage(),
       ),
     );
   }
