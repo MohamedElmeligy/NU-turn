@@ -54,8 +54,7 @@ flutter:
     - assets/destination_map_marker.png
     - assets/friend1.jpg
     - assets/friend2.jpg
-    - assets/Logo.png
-
+    - assets/cross-icon.png
     - assets/happy.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

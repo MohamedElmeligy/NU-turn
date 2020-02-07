@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
   isAuth() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
 
-    if (_prefs.containsKey('phone'))
+    if (_prefs.containsKey('uid'))
       return true;
     else
       return false;

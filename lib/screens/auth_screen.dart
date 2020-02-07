@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 
 import '../models/user.dart';
+
 import './map_screen.dart';
+import '../components/custom_dialog.dart';
+
 import '../providers/phone_auth.dart';
 
 class LoginPage extends StatelessWidget {
@@ -11,6 +14,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
 
     return ChangeNotifierProvider<Auth>(
       create: (ctx) => Auth(),
@@ -44,29 +48,11 @@ class LoginPage extends StatelessWidget {
 
             void errorDialog(String msg) {
               auth.setIsLoading(false);
-              showDialog(
-                context: ctx,
-                builder: (ctx) => Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: AlertDialog(
-                    title: Text(
-                      'خطأ',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    content: Text(
-                      msg,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    actions: <Widget>[
-                      FlatButton(
-                        child: Text('حسنا'),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                        },
-                      )
-                    ],
-                  ),
-                ),
+              CustomDialog(
+                title: "Error",
+                description: msg,
+                positiveButtonText: "back",
+                image: Image.asset("cross-icon"),
               );
               // auth.setIsLoading(false);
             }
@@ -194,6 +180,8 @@ class LoginPage extends StatelessWidget {
 
             _getPinField() {
               return Container(
+                padding: EdgeInsets.only(top: 70),
+                margin: EdgeInsets.only(left: 30),
                 height: screenHeight * 0.45,
                 child: Center(
                   child: Container(
