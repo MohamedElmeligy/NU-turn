@@ -30,6 +30,7 @@ class UpperButtons extends StatelessWidget {
                   builder: (context) => LoginPage(),
                 ),
               );
+              Provider.of<Auth>(context, listen: false).setShowPins(false);
             },
             color: Colors.transparent,
             icon: Transform.rotate(

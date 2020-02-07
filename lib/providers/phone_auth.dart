@@ -108,14 +108,16 @@ class Auth with ChangeNotifier {
           verificationId: _verificationCode, smsCode: _smsCode),
     ).then((succeeded) {
       print('excuuuuu   ');
-      if (succeeded)
+      if (succeeded) {
+        _isLoading = false;
+        notifyListeners();
         goToMap();
-      else
+      } else {
+        _isLoading = false;
+        notifyListeners();
         errorDialog(_errorMsg);
+      }
     });
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<bool> _verification(AuthCredential auth) async {
@@ -229,6 +231,11 @@ class Auth with ChangeNotifier {
         _prefs.setString('identity', 'student');
       }
     });
+  }
+
+  void setShowPins(bool show) {
+    _showPins = show;
+    notifyListeners();
   }
 
   void signout() {
