@@ -112,7 +112,7 @@ class MapProvider with ChangeNotifier {
 
   void signout() {
     _prefs.clear();
-    _userLocatorListener.cancel();
+    if (_userLocatorListener != null) _userLocatorListener.cancel();
   }
 
   //////////                     Defualt construction                     //////////

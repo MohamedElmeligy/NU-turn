@@ -15,7 +15,7 @@ class CustomDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double padding = 0.06 * MediaQuery.of(context).size.width;
-    double avatarRadius = 0.1 * MediaQuery.of(context).size.width;
+    double avatarRadius = 0.15 * MediaQuery.of(context).size.width;
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(padding),
@@ -23,6 +23,7 @@ class CustomDialog extends StatelessWidget {
       elevation: 0.0,
       backgroundColor: Colors.transparent,
       child: Stack(
+        alignment: Alignment.center,
         children: <Widget>[
           Container(
             padding: EdgeInsets.only(
@@ -64,34 +65,25 @@ class CustomDialog extends StatelessWidget {
                 ),
                 SizedBox(height: 24.0),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    FlatButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(
-                            "Back"); // To close the dialog and go to home screen
-                      },
-                      child: Text(
-                        negativeButtonText,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      color: Colors.grey.shade500,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0.2 * padding),
-                      ),
-                    ),
-                    FlatButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(
-                            "My Profile"); // To close the dialog and go to the user's profile
-                      },
-                      child: Text(
-                        positiveButtonText,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      color: Colors.deepPurple,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0.2 * padding),
+                    Container(
+                      height: 0.05 * MediaQuery.of(context).size.height,
+                      child: FlatButton(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pop("Okay"); // To close the dialog
+                        },
+                        child: Text(
+                          positiveButtonText,
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                        color: Colors.deepPurple,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0.2 * padding),
+                        ),
                       ),
                     ),
                   ],
@@ -100,16 +92,11 @@ class CustomDialog extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: padding,
-            right: padding,
-            child: CircleAvatar(
-              backgroundColor: Colors.deepPurple,
-              radius: avatarRadius,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.white,
-                size: 1.0 * avatarRadius,
-              ),
+            top: 0,
+            height: 2.0 * avatarRadius,
+            child: Image.asset(
+              "assets/happy.png",
+              // height: avatarRadius,
             ),
           ),
         ],
