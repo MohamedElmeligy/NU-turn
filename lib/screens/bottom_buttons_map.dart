@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../providers/map.dart';
 
+import '../components/custom_dialog.dart';
+
 class BottomButtons extends StatelessWidget {
   const BottomButtons({
     Key key,
@@ -62,6 +64,16 @@ class BottomButtons extends StatelessWidget {
                                   child: RaisedButton(
                                     onPressed: () {
                                       mapProvider.setMyLocation(remove: true);
+
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => CustomDialog(
+                                          title: "Happy ride!",
+                                          description: "Wish you a happy day",
+                                          positiveButtonText: "Okay",
+                                          negativeButtonText: "Back",
+                                        ),
+                                      );
                                     },
                                     color: Colors.deepPurple,
                                     shape: RoundedRectangleBorder(
