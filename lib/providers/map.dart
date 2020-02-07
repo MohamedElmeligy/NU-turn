@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:uturn/models/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/driver.dart';
 import '../models/pin_pill_info.dart';
+import '../models/user.dart';
 
 class MapProvider with ChangeNotifier {
   static const double CAMERA_ZOOM = 16;
@@ -86,6 +87,31 @@ class MapProvider with ChangeNotifier {
   // current user's profile
   User user;
 
+  SharedPreferences _prefs;
+
+  Future<void> fetchLocalUser() async {
+    _prefs = await SharedPreferences.getInstance();
+    String _uid = _prefs.getString('uid');
+    String _phone = _prefs.getString('phone');
+    String _name = _prefs.getString('name');
+    String _id = _prefs.getString('id');
+    String _identity = _prefs.getString('identity');
+
+    user = User(
+      uid: _uid,
+      phone: _phone,
+      name: _name,
+      id: _id,
+      identity: _identity,
+    );
+
+    return;
+  }
+
+  void signout() {
+    _prefs.clear();
+  }
+
   //////////                     Defualt construction                     //////////
   ///
   MapProvider({this.user}) {
@@ -94,12 +120,9 @@ class MapProvider with ChangeNotifier {
 
     userLocator = Location();
 
-    dbRef
-        .collection('licencedDrivers')
-        .document(user.phone)
-        .get()
-        .then((__user) {
-      if (!__user.exists) {
+    fetchLocalUser().then((_) {
+      print(user.uid);
+      if (user.identity == "student") {
         // set student pin info 'myPinInfo'
         myPinInfo = PinInformation(
           name: user.name,
