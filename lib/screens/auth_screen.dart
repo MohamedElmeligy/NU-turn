@@ -52,6 +52,7 @@ class LoginPage extends StatelessWidget {
                 title: "Error",
                 description: msg,
                 positiveButtonText: "back",
+                negativeButtonText: "ok",
                 image: Image.asset("cross-icon"),
               );
               // auth.setIsLoading(false);
