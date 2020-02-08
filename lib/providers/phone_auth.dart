@@ -18,6 +18,7 @@ class Auth with ChangeNotifier {
   bool _isLoading = false;
   bool _loginSuccess = false;
   bool _showPins = false;
+  bool _buttonDisabled = false;
 
   final _phoneController = TextEditingController();
   final _nameController = TextEditingController();
@@ -65,6 +66,7 @@ class Auth with ChangeNotifier {
       this._verificationCode = verificationId;
       _isLoading = false;
       _showPins = true;
+      _buttonDisabled = false;
       notifyListeners();
     };
 
@@ -101,6 +103,7 @@ class Auth with ChangeNotifier {
 
   Future<void> manualSignIn(Function goToMap, Function errorDialog) async {
     _isLoading = true;
+    _buttonDisabled = false;
     notifyListeners();
 
     _verification(
@@ -167,6 +170,10 @@ class Auth with ChangeNotifier {
     return _isLoading;
   }
 
+  bool getButtonDisabled() {
+    return _buttonDisabled;
+  }
+
   GlobalKey getFormKey() {
     return _formKey;
   }
@@ -201,8 +208,14 @@ class Auth with ChangeNotifier {
     return _smsCode;
   }
 
+  void setButtonDisabled(bool button) {
+    _buttonDisabled = button;
+    notifyListeners();
+  }
+
   void setIsLoading(bool isLoading) {
     _isLoading = isLoading;
+    notifyListeners();
   }
 
   void setSmsCode(String code) {

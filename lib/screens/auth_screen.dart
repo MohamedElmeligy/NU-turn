@@ -34,27 +34,32 @@ class LoginPage extends StatelessWidget {
             bool _loading = auth.getIsLoading();
             bool _showPins = auth.getShowpins();
             bool _pinHasError = auth.getPinHasError();
+            bool _buttonDisabled = auth.getButtonDisabled();
 
             void goToMap() {
-              auth.setIsLoading(false);
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => MapScreen(),
                 ),
               );
+              auth.setIsLoading(false);
+              auth.setButtonDisabled(false);
               // auth.setIsLoading(false);
             }
 
             void errorDialog(String msg) {
               auth.setIsLoading(false);
-              CustomDialog(
-                title: "Error",
-                description: msg,
-                positiveButtonText: "back",
-                negativeButtonText: "ok",
-                image: Image.asset("cross-icon"),
-              );
+              auth.setButtonDisabled(false);
+              showDialog(
+                  context: context,
+                  builder: (ctx) => CustomDialog(
+                        title: "Error",
+                        description: msg,
+                        positiveButtonText: "back",
+                        negativeButtonText: "ok",
+                        image: Image.asset("assets/cross.png"),
+                      ));
               // auth.setIsLoading(false);
             }
 
@@ -65,6 +70,7 @@ class LoginPage extends StatelessWidget {
               }
 
               _formState.save();
+              auth.setButtonDisabled(true);
               if (!_showPins) {
                 User user = new User(phone: "+2$_phone", name: _name, id: _id);
                 auth.setProfile(user);
@@ -90,7 +96,13 @@ class LoginPage extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () {
-                        submit();
+                        if (!_buttonDisabled) {
+                          print("clicked");
+                          submit();
+                        }
+                      },
+                      onDoubleTap: () {
+                        print('double');
                       },
                       child: CircleAvatar(
                         backgroundColor: Colors.grey.shade800,
