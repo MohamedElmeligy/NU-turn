@@ -337,9 +337,9 @@ class MapProvider with ChangeNotifier {
       addingMyRequest = false;
       notifyListeners();
       return false;
+    } else {
+      return Future.delayed(Duration(milliseconds: 2000), () => true);
     }
-
-    return true;
   }
 
   void setMyLocation({
