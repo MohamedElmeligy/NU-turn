@@ -175,7 +175,10 @@ class LoginPage extends StatelessWidget {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'University ID'),
+                      decoration: InputDecoration(
+                        labelText: 'University ID',
+                        helperText: "Your 8 or 7 digits ID",
+                      ),
                       onChanged: (value) {
                         _id = value;
                       },
