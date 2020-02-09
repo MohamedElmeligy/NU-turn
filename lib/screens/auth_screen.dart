@@ -170,7 +170,7 @@ class LoginPage extends StatelessWidget {
                       keyboardType: TextInputType.phone,
                       controller: _idController,
                       validator: (value) {
-                        if (value.length != 8 || value.length != 7) {
+                        if (value.length != 8 && value.length != 7) {
                           return 'Invalid ID';
                         }
                         return null;

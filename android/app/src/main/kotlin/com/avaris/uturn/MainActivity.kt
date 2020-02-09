@@ -1,4 +1,4 @@
-package com.example.uturn
+package com.avaris.uturn
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
