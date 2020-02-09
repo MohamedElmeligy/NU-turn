@@ -315,7 +315,7 @@ class MapProvider with ChangeNotifier {
     );
   }
 
-  Future<void> checkLocationPermissionAndService() async {
+  Future<bool> checkLocationPermissionAndService() async {
     bool permission = await userLocator.hasPermission().then((hasPermission) {
       if (hasPermission) return true;
       return userLocator.requestPermission();
@@ -324,7 +324,7 @@ class MapProvider with ChangeNotifier {
     if (!permission) {
       addingMyRequest = false;
       notifyListeners();
-      return;
+      return false;
     }
 
     // check for location service
@@ -336,8 +336,10 @@ class MapProvider with ChangeNotifier {
     if (!service) {
       addingMyRequest = false;
       notifyListeners();
-      return;
+      return false;
     }
+
+    return true;
   }
 
   void setMyLocation({
@@ -347,51 +349,53 @@ class MapProvider with ChangeNotifier {
     notifyListeners();
 
     // check for location permission
-    await checkLocationPermissionAndService();
+    await checkLocationPermissionAndService().then((response) async {
+      if (response) {
+        //////  checks passed! safe to proceed
 
-    //////  checks passed! safe to proceed
+        if (remove) {
+          _markers.remove(user.uid);
+          _requestedRide = false;
 
-    if (remove) {
-      _markers.remove(user.uid);
-      _requestedRide = false;
+          dbRef.collection('students').document('${user.uid}').delete();
 
-      dbRef.collection('students').document('${user.uid}').delete();
+          updatePinsOnMap(currentDriverPosition);
+        } else {
+          _requestedRide = true;
 
-      updatePinsOnMap(currentDriverPosition);
-    } else {
-      _requestedRide = true;
+          userLocationData = await userLocator.getLocation();
+          studentPosition =
+              LatLng(userLocationData.latitude, userLocationData.longitude);
 
-      userLocationData = await userLocator.getLocation();
-      studentPosition =
-          LatLng(userLocationData.latitude, userLocationData.longitude);
+          Marker myMarker = Marker(
+            markerId: MarkerId(user.uid),
+            position: studentPosition,
+            onTap: () {
+              currentlySelectedPin = myPinInfo;
+              setPinPillPosition(60);
+            },
+            icon: myLocationIcon,
+          );
 
-      Marker myMarker = Marker(
-        markerId: MarkerId(user.uid),
-        position: studentPosition,
-        onTap: () {
-          currentlySelectedPin = myPinInfo;
-          setPinPillPosition(60);
-        },
-        icon: myLocationIcon,
-      );
+          _markers.update(
+            user.uid,
+            (marker) => myMarker,
+            ifAbsent: () => myMarker,
+          );
 
-      _markers.update(
-        user.uid,
-        (marker) => myMarker,
-        ifAbsent: () => myMarker,
-      );
+          dbRef.collection('students').document('${user.uid}').setData({
+            "name": user.name,
+            "phone": user.phone,
+            "id": user.id,
+            "position":
+                GeoPoint(studentPosition.latitude, studentPosition.longitude),
+          });
 
-      dbRef.collection('students').document('${user.uid}').setData({
-        "name": user.name,
-        "phone": user.phone,
-        "id": user.id,
-        "position":
-            GeoPoint(studentPosition.latitude, studentPosition.longitude),
-      });
-
-      updatePinsOnMap(studentPosition);
-    }
-
+          await updatePinsOnMap(studentPosition);
+        }
+      }
+      print("${studentPosition.latitude}  ${studentPosition.longitude}");
+    });
     addingMyRequest = false;
     notifyListeners();
   }
@@ -413,10 +417,9 @@ class MapProvider with ChangeNotifier {
     );
   }
 
-  void updatePinsOnMap(LatLng newPosition) async {
+  Future<void> updatePinsOnMap(LatLng newPosition) async {
     // create a new CameraPosition instance
-    // every time the location changes, so the camera
-    // follows the pin as it moves with an animation
+
     CameraPosition cPosition = CameraPosition(
       zoom: CAMERA_ZOOM,
       tilt: CAMERA_TILT,
