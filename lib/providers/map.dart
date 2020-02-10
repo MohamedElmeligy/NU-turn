@@ -76,8 +76,8 @@ class MapProvider with ChangeNotifier {
 
   PinInformation myPinInfo;
   PinInformation busPinInfo = PinInformation(
-    pinPath: 'assets/driving_pin.png',
-    avatarPath: 'assets/friend2.jpg',
+    pinPath: 'assets/destination_map_marker.png',
+    avatarPath: 'assets/student.png',
     name: '',
     phone: '',
     id: '',
@@ -132,7 +132,7 @@ class MapProvider with ChangeNotifier {
           phone: user.phone,
           id: user.id,
           pinPath: "assets/destination_map_marker.png",
-          avatarPath: "assets/friend1.jpg",
+          avatarPath: "assets/student.png",
           labelColor: Colors.blueAccent,
         );
 
@@ -184,7 +184,7 @@ class MapProvider with ChangeNotifier {
                         labelColor: Colors.blueAccent,
                         id: '',
                         pinPath: 'assets/driving_pin.png',
-                        avatarPath: 'assets/friend2.jpg',
+                        avatarPath: 'assets/driver.png',
                       );
                       setPinPillPosition(60);
                     },
@@ -249,7 +249,7 @@ class MapProvider with ChangeNotifier {
                   labelColor: Colors.blueAccent,
                   id: '',
                   pinPath: 'assets/driving_pin.png',
-                  avatarPath: 'assets/friend2.jpg',
+                  avatarPath: 'assets/driver.png',
                 );
                 setPinPillPosition(60);
               },
@@ -282,7 +282,7 @@ class MapProvider with ChangeNotifier {
                     labelColor: Colors.deepPurple,
                     id: '',
                     pinPath: 'assets/destination_map_marker.png',
-                    avatarPath: 'assets/friend1.jpg',
+                    avatarPath: 'assets/student.png',
                   );
                   setPinPillPosition(60);
                 },
@@ -290,7 +290,7 @@ class MapProvider with ChangeNotifier {
                   student.data['position'].latitude,
                   student.data['position'].longitude,
                 ), // updated position
-                icon: driverLocationIcon,
+                icon: myLocationIcon,
               );
 
               _markers.update(
