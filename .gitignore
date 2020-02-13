@@ -32,6 +32,9 @@
 
 /android/key.properties
 
+/U-Turn_screenshots/
+/graphic/
+
 # Web related
 lib/generated_plugin_registrant.dart
 
